@@ -54,6 +54,23 @@ def get_css_styles():
         border-radius: 0.25rem;
         margin: 1rem 0;
     }
+    
+    /* Table of Contents Styles */
+    [data-testid="stSidebar"] a {
+        text-decoration: none;
+        color: #262730;
+        transition: color 0.2s ease;
+    }
+    
+    [data-testid="stSidebar"] a:hover {
+        color: #ff7f0e;
+        text-decoration: underline;
+    }
+    
+    [data-testid="stSidebar"] .toc-item {
+        padding: 0.2rem 0;
+        line-height: 1.6;
+    }
 </style>
 """
 

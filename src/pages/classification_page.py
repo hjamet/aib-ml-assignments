@@ -19,6 +19,7 @@ from ..utils.ui_components import (
     display_model_metrics_columns, display_metrics_table, render_hyperparameter_controls,
     render_prediction_inputs, display_prediction_result
 )
+from ..utils.toc import init_toc, render_toc, toc_markdown, toc_header, toc_subheader
 
 
 def save_to_state(temp_key, perm_key):
@@ -28,6 +29,9 @@ def save_to_state(temp_key, perm_key):
 
 def render_classification_page():
     """Render the classification page."""
+    # Initialize TOC
+    init_toc()
+    
     # Check if preprocessing is done
     if 'X' not in st.session_state:
         st.warning("⚠️ Veuillez d'abord configurer le preprocessing dans l'onglet 'Preprocessing & Exploration'")
@@ -41,10 +45,10 @@ def render_classification_page():
     normalize_features = st.session_state.get('normalize_features', True)
     selected_features = st.session_state.get('selected_features_persistent', [])
     
-    st.markdown('<h2 class="section-header">🤖 Classification Models Training & Comparison</h2>', unsafe_allow_html=True)
+    toc_markdown('<h2 class="section-header">🤖 Classification Models Training & Comparison</h2>', level=1, unsafe_allow_html=True)
     
     # Model selection in page
-    st.markdown("### 📋 Model Selection")
+    toc_subheader("📋 Model Selection")
     
     available_models = get_available_models("Classification")
     
@@ -63,7 +67,7 @@ def render_classification_page():
     )
     
     # Metric selection
-    st.markdown("### 📊 Metric Selection")
+    toc_subheader("📊 Metric Selection")
     
     available_metrics = ['Accuracy', 'Precision', 'Recall', 'F1']
     
@@ -85,7 +89,7 @@ def render_classification_page():
     test_size = st.session_state.get("test_size", 20)
     
     # Hyperparameters in page
-    st.markdown("### ⚙️ Hyperparameter Tuning")
+    toc_subheader("⚙️ Hyperparameter Tuning")
     st.info("💡 Hyperparameters control how models learn. Experiment with different values!")
     hyperparams = {}
     
@@ -102,13 +106,13 @@ def render_classification_page():
         # Display results
         results_df = pd.DataFrame(results)
         
-        st.subheader("📊 Model Performance Comparison")
+        toc_subheader("📊 Model Performance Comparison")
         
         # Metrics display as table
         display_metrics_table(results_df, "Classification", selected_metrics)
         
         # Comparison charts in two columns
-        st.markdown("### 📈 Performance Metrics Comparison")
+        toc_subheader("📈 Performance Metrics Comparison")
         col_train, col_test = st.columns(2)
         
         with col_train:
@@ -120,7 +124,7 @@ def render_classification_page():
             st.plotly_chart(fig_test, use_container_width=True)
         
         # Model Exploration - Allow student to select any trained model
-        st.markdown("### 🔍 Model Exploration")
+        toc_subheader("🔍 Model Exploration")
         st.info("💡 Select a model below to explore its detailed results and performance metrics.")
         
         # Initialize temp key from permanent key if needed
@@ -147,7 +151,7 @@ def render_classification_page():
         y_pred_selected = selected_model.predict(X_test)
         
         # Confusion Matrices - Train and Test
-        st.markdown(f"### 🔍 Confusion Matrices - {selected_model_name}")
+        toc_subheader(f"🔍 Confusion Matrices - {selected_model_name}")
         
         y_pred_train = selected_model.predict(X_train)
         cm_train = confusion_matrix(y_train, y_pred_train)
@@ -191,7 +195,7 @@ def render_classification_page():
         
         # 2D Visualization
         if len(feature_names) >= 2:
-            st.subheader(f"📊 2D Feature Visualization - {selected_model_name}")
+            toc_subheader(f"📊 2D Feature Visualization - {selected_model_name}")
             
             col1, col2 = st.columns(2)
             with col1:
@@ -249,7 +253,7 @@ def render_classification_page():
         
         # Feature Importance
         if hasattr(selected_model, 'feature_importances_'):
-            st.subheader(f"🎯 Feature Importance - {selected_model_name}")
+            toc_subheader(f"🎯 Feature Importance - {selected_model_name}")
             
             fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
@@ -257,7 +261,7 @@ def render_classification_page():
             st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important for predicting survival.")
         
         elif hasattr(selected_model, 'coef_'):
-            st.subheader(f"🎯 Feature Coefficients - {selected_model_name}")
+            toc_subheader(f"🎯 Feature Coefficients - {selected_model_name}")
             
             # Handle both 1D and 2D coefficient arrays
             coef = selected_model.coef_[0] if len(selected_model.coef_.shape) > 1 else selected_model.coef_
@@ -267,7 +271,7 @@ def render_classification_page():
             st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions. Positive values increase survival probability, negative values decrease it.")
         
         # Interactive Prediction
-        st.markdown('<h2 class="section-header">🔮 Make Your Own Predictions</h2>', unsafe_allow_html=True)
+        toc_markdown('<h2 class="section-header">🔮 Make Your Own Predictions</h2>', level=1, unsafe_allow_html=True)
         
         st.markdown(f"Try different passenger profiles and see what **{selected_model_name}** predicts!")
         
@@ -304,4 +308,7 @@ def render_classification_page():
                 probability = selected_model.predict_proba(input_array)[0]
                 
                 display_prediction_result(prediction, probability, y, "Classification")
+    
+    # Render TOC at the end
+    render_toc()
 

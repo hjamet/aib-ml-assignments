@@ -12,6 +12,7 @@ import os
 from src.utils.config import setup_page_config, apply_css_styles
 from src.utils.data_loader import load_titanic_data
 from src.utils.ui_components import display_dataset_overview
+from src.utils.toc import init_toc, render_toc, toc_markdown
 from src.pages.preprocessing_page import render_preprocessing_page
 from src.pages.regression_page import render_regression_page
 from src.pages.classification_page import render_classification_page
@@ -64,6 +65,9 @@ def initialize_session_state():
 
 def home_page():
     """Home page with dataset overview."""
+    # Initialize TOC
+    init_toc()
+    
     # Load data
     df = load_titanic_data()
     
@@ -83,7 +87,7 @@ def home_page():
     """, unsafe_allow_html=True)
     
     # Dataset overview
-    st.markdown('<h2 class="section-header">📊 Dataset Overview</h2>', unsafe_allow_html=True)
+    toc_markdown('<h2 class="section-header">📊 Dataset Overview</h2>', level=1, unsafe_allow_html=True)
     display_dataset_overview(df)
     
     # Show sample data
@@ -91,7 +95,7 @@ def home_page():
         st.dataframe(df.head(10), use_container_width=True)
     
     # Learning Summary
-    st.markdown('<h2 class="section-header">🎓 What You\'ll Learn</h2>', unsafe_allow_html=True)
+    toc_markdown('<h2 class="section-header">🎓 What You\'ll Learn</h2>', level=1, unsafe_allow_html=True)
     
     st.markdown("""
     <div class="success-box">
@@ -110,6 +114,9 @@ def home_page():
         weather prediction, and much more!
     </div>
     """, unsafe_allow_html=True)
+    
+    # Render TOC at the end
+    render_toc()
 
 
 def preprocessing_page_wrapper():

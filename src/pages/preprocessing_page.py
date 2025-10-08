@@ -8,6 +8,7 @@ import plotly.express as px
 
 from ..utils.preprocessing import preprocess_data, get_feature_mapping, get_reverse_feature_mapping
 from ..utils.ui_components import display_preprocessing_results, display_dataset_overview
+from ..utils.toc import init_toc, render_toc, toc_markdown, toc_subheader
 
 
 def save_to_state(temp_key, perm_key):
@@ -22,8 +23,11 @@ def render_preprocessing_page(df):
     Args:
         df (pd.DataFrame): The Titanic dataset
     """
+    # Initialize TOC
+    init_toc()
+    
     # ===== CONFIGURATION SECTION =====
-    st.markdown('<h2 class="section-header">🔧 Configuration</h2>', unsafe_allow_html=True)
+    toc_markdown('<h2 class="section-header">🔧 Configuration</h2>', level=1, unsafe_allow_html=True)
     
     # Target variable selection
     target_options = list(df.columns)
@@ -128,13 +132,13 @@ def render_preprocessing_page(df):
     )
     
     # ===== TWO-COLUMN LAYOUT =====
-    st.markdown('<h2 class="section-header">📊 Data Comparison</h2>', unsafe_allow_html=True)
+    toc_markdown('<h2 class="section-header">📊 Data Comparison</h2>', level=1, unsafe_allow_html=True)
     
     col_left, col_right = st.columns(2)
     
     # ===== LEFT COLUMN: ORIGINAL DATA =====
     with col_left:
-        st.markdown("### 📄 Original Data")
+        toc_subheader("📄 Original Data")
         
         # Dataset overview
         st.markdown("**Dataset Metrics:**")
@@ -212,7 +216,7 @@ def render_preprocessing_page(df):
     
     # ===== RIGHT COLUMN: TRANSFORMED DATA =====
     with col_right:
-        st.markdown("### ⚙️ Transformed Data")
+        toc_subheader("⚙️ Transformed Data")
         
         if st.session_state.get("selected_features"):
             # Get values from permanent session_state keys
@@ -343,3 +347,6 @@ def render_preprocessing_page(df):
                 st.info("No features selected for transformation.")
         else:
             st.info("⚠️ Please select features in the configuration section above to see transformed data.")
+    
+    # Render TOC at the end
+    render_toc()
