@@ -282,6 +282,70 @@ def main():
     )
     
     # =============================================
+    # GLOBAL PREPROCESSING (Always executed)
+    # =============================================
+    # Initialize session state if not exists
+    if 'selected_features' not in st.session_state:
+        st.session_state.selected_features = ["Age", "Sex", "Passenger Class", "Fare"]
+    if 'normalize_features' not in st.session_state:
+        st.session_state.normalize_features = True
+    if 'missing_age_option' not in st.session_state:
+        st.session_state.missing_age_option = "Fill with median"
+    if 'test_size' not in st.session_state:
+        st.session_state.test_size = 20
+    
+    # Always execute preprocessing if features are selected
+    if st.session_state.selected_features:
+        # Get values from session_state
+        selected_features = st.session_state.selected_features
+        normalize_features = st.session_state.normalize_features
+        missing_age_option = st.session_state.missing_age_option
+        
+        # Preprocess data
+        processed_df = df.copy()
+        
+        # Handle missing ages
+        if missing_age_option == "Fill with median":
+            processed_df['age'].fillna(processed_df['age'].median(), inplace=True)
+        elif missing_age_option == "Fill with mean":
+            processed_df['age'].fillna(processed_df['age'].mean(), inplace=True)
+        
+        # Encode categorical variables
+        processed_df['sex_encoded'] = (processed_df['sex'] == 'male').astype(int)
+        processed_df['embarked_encoded'] = LabelEncoder().fit_transform(processed_df['embarked'].fillna('S'))
+        
+        # Feature mapping
+        feature_mapping = {
+            'Age': 'age',
+            'Sex': 'sex_encoded',
+            'Passenger Class': 'pclass',
+            'Fare': 'fare',
+            'Siblings/Spouses': 'sibsp',
+            'Parents/Children': 'parch',
+            'Port of Embarkation': 'embarked_encoded'
+        }
+        
+        feature_names = [feature_mapping[f] for f in selected_features]
+        X = processed_df[feature_names].copy()
+        
+        # Drop rows with missing values
+        X = X.dropna()
+        y = processed_df.loc[X.index, 'survived']
+        
+        # Normalize if requested
+        scaler = None
+        if normalize_features:
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+            X = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
+        
+        # Store processed data in session state
+        st.session_state.X = X
+        st.session_state.y = y
+        st.session_state.feature_names = feature_names
+        st.session_state.scaler = scaler
+    
+    # =============================================
     # PAGE 1: PREPROCESSING & EXPLORATION
     # =============================================
     if page == "📊 Preprocessing & Exploration":
@@ -353,71 +417,17 @@ def main():
         
         st.slider("Test Set Size (%)", 10, 40, 20, 5, key="test_size")
         
-        if st.session_state.selected_features:
-            # Get values from session_state (set by widgets)
-            selected_features = st.session_state.selected_features
-            normalize_features = st.session_state.normalize_features
-            missing_age_option = st.session_state.missing_age_option
-            
-            # Preprocess data
-            processed_df = df.copy()
-            
-            # Handle missing ages
-            if missing_age_option == "Fill with median":
-                processed_df['age'].fillna(processed_df['age'].median(), inplace=True)
-            elif missing_age_option == "Fill with mean":
-                processed_df['age'].fillna(processed_df['age'].mean(), inplace=True)
-            
-            # Encode categorical variables
-            processed_df['sex_encoded'] = (processed_df['sex'] == 'male').astype(int)
-            processed_df['embarked_encoded'] = LabelEncoder().fit_transform(processed_df['embarked'].fillna('S'))
-            
-            # Feature mapping
-            feature_mapping = {
-                'Age': 'age',
-                'Sex': 'sex_encoded',
-                'Passenger Class': 'pclass',
-                'Fare': 'fare',
-                'Siblings/Spouses': 'sibsp',
-                'Parents/Children': 'parch',
-                'Port of Embarkation': 'embarked_encoded'
-            }
-            
-            feature_names = [feature_mapping[f] for f in selected_features]
-            X = processed_df[feature_names].copy()
-            
-            # Drop rows with missing values
-            before_count = len(X)
-            X = X.dropna()
-            y = processed_df.loc[X.index, 'survived']
-            after_count = len(X)
-            
-            # Normalize if requested
-            scaler = None
-            if normalize_features:
-                scaler = StandardScaler()
-                X_scaled = scaler.fit_transform(X)
-                X = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
-            
-            # Store processed data in session state
-            st.session_state.X = X
-            st.session_state.y = y
-            st.session_state.feature_names = feature_names
-            st.session_state.scaler = scaler
-            
-            # Show preprocessing results
+        # Show preprocessing results if data is available
+        if 'X' in st.session_state:
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Original Samples", before_count)
+                st.metric("Final Samples", len(st.session_state.X))
             with col2:
-                st.metric("Final Samples", after_count)
+                st.metric("Features Used", len(st.session_state.feature_names))
             with col3:
-                st.metric("Features Used", len(selected_features))
+                st.metric("Test Size", f"{st.session_state.test_size}%")
             
-            if before_count != after_count:
-                st.warning(f"⚠️ Removed {before_count - after_count} rows with missing values")
-            
-            st.success(f"✅ Data preprocessing completed! Using {len(selected_features)} features: {', '.join(selected_features)}")
+            st.success(f"✅ Data preprocessing completed! Using {len(st.session_state.selected_features)} features: {', '.join(st.session_state.selected_features)}")
     
     # =============================================
     # PAGE 2: REGRESSION
@@ -425,7 +435,7 @@ def main():
     elif page == "📈 Régression":
         # Check if preprocessing is done
         if 'X' not in st.session_state:
-            st.warning("⚠️ Veuillez d'abord configurer le preprocessing dans l'onglet 'Preprocessing & Exploration'")
+            st.warning("⚠️ Please first configure preprocessing in the 'Preprocessing & Exploration' page")
             st.stop()
         
         # Retrieve preprocessed data
@@ -782,7 +792,7 @@ def main():
                 st.subheader("👤 Passenger Profile")
                 
                 if not selected_features:
-                    st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                    st.warning("⚠️ Please first select features in the 'Preprocessing & Exploration' page to make predictions.")
                 else:
                     prediction_inputs = {}
                     
@@ -852,7 +862,7 @@ def main():
     elif page == "🎯 Classification":
         # Check if preprocessing is done
         if 'X' not in st.session_state:
-            st.warning("⚠️ Veuillez d'abord configurer le preprocessing dans l'onglet 'Preprocessing & Exploration'")
+            st.warning("⚠️ Please first configure preprocessing in the 'Preprocessing & Exploration' page")
             st.stop()
         
         # Retrieve preprocessed data
@@ -1222,7 +1232,7 @@ def main():
                 st.subheader("👤 Passenger Profile")
                 
                 if not selected_features:
-                    st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                    st.warning("⚠️ Please first select features in the 'Preprocessing & Exploration' page to make predictions.")
                 else:
                     prediction_inputs = {}
                     

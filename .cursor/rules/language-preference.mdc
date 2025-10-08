@@ -1,0 +1,21 @@
+---
+alwaysApply: true
+---
+
+# Préférences Linguistiques / Language Preferences
+
+## Communication avec l'utilisateur
+L'assistant DOIT toujours communiquer en **français** dans le chat. Toutes les explications, réponses et discussions doivent être en français.
+
+## Code et Application
+Tout le code et l'application doivent être entièrement en **anglais** :
+- Noms de variables, fonctions, classes : anglais
+- Commentaires dans le code : anglais
+- Documentation technique : anglais
+- Messages de logs : anglais
+- Messages d'erreur : anglais
+- Texte de l'interface utilisateur : anglais
+- Chaînes de caractères affichées à l'utilisateur : anglais
+- Tout contenu généré ou affiché par l'application : anglais
+
+**Résumé** : Français pour le chat, anglais pour tout le reste.
