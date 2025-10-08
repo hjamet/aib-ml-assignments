@@ -79,6 +79,19 @@ def toc_subheader(title, **kwargs):
     st.subheader(title, anchor=anchor, **kwargs)
 
 
+def toc_subsubheader(title, **kwargs):
+    """
+    Wrapper for level 3 heading that automatically registers the section in TOC.
+    
+    Args:
+        title (str): The subsubheader title
+        **kwargs: Additional arguments passed to st.markdown()
+    """
+    anchor = generate_anchor(title)
+    _register_section(title, level=3)
+    st.markdown(f"### {title}", **kwargs)
+
+
 def toc_markdown(html, level=1, **kwargs):
     """
     Wrapper for st.markdown() that automatically registers HTML headers in TOC.

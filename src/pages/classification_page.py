@@ -19,7 +19,7 @@ from ..utils.ui_components import (
     display_model_metrics_columns, display_metrics_table, render_hyperparameter_controls,
     render_prediction_inputs, display_prediction_result
 )
-from ..utils.toc import init_toc, render_toc, toc_markdown, toc_header, toc_subheader
+from ..utils.toc import init_toc, render_toc, toc_markdown, toc_header, toc_subheader, toc_subsubheader
 
 
 def save_to_state(temp_key, perm_key):
@@ -151,7 +151,7 @@ def render_classification_page():
         y_pred_selected = selected_model.predict(X_test)
         
         # Confusion Matrices - Train and Test
-        toc_subheader(f"🔍 Confusion Matrices - {selected_model_name}")
+        toc_subsubheader(f"🔍 Confusion Matrices - {selected_model_name}")
         
         y_pred_train = selected_model.predict(X_train)
         cm_train = confusion_matrix(y_train, y_pred_train)
@@ -195,7 +195,7 @@ def render_classification_page():
         
         # 2D Visualization
         if len(feature_names) >= 2:
-            toc_subheader(f"📊 2D Feature Visualization - {selected_model_name}")
+            toc_subsubheader(f"📊 2D Feature Visualization - {selected_model_name}")
             
             col1, col2 = st.columns(2)
             with col1:
@@ -253,7 +253,7 @@ def render_classification_page():
         
         # Feature Importance
         if hasattr(selected_model, 'feature_importances_'):
-            toc_subheader(f"🎯 Feature Importance - {selected_model_name}")
+            toc_subsubheader(f"🎯 Feature Importance - {selected_model_name}")
             
             fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
@@ -261,7 +261,7 @@ def render_classification_page():
             st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important for predicting survival.")
         
         elif hasattr(selected_model, 'coef_'):
-            toc_subheader(f"🎯 Feature Coefficients - {selected_model_name}")
+            toc_subsubheader(f"🎯 Feature Coefficients - {selected_model_name}")
             
             # Handle both 1D and 2D coefficient arrays
             coef = selected_model.coef_[0] if len(selected_model.coef_.shape) > 1 else selected_model.coef_
@@ -271,7 +271,7 @@ def render_classification_page():
             st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions. Positive values increase survival probability, negative values decrease it.")
         
         # Interactive Prediction
-        toc_markdown('<h2 class="section-header">🔮 Make Your Own Predictions</h2>', level=1, unsafe_allow_html=True)
+        toc_subsubheader("🔮 Make Your Own Predictions")
         
         st.markdown(f"Try different passenger profiles and see what **{selected_model_name}** predicts!")
         
