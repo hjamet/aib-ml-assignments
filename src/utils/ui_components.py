@@ -323,6 +323,9 @@ def render_prediction_inputs(selected_features, key_prefix):
         port_input = st.selectbox("Port of Embarkation", ["Southampton", "Cherbourg", "Queenstown"], key=f"{key_prefix}_pred_port")
         port_mapping = {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}
         prediction_inputs['embarked_encoded'] = port_mapping[port_input]
+    if 'Survived' in selected_features:
+        survived_input = st.selectbox("Survival Status", ["Did not survive", "Survived"], key=f"{key_prefix}_pred_survived")
+        prediction_inputs['survived'] = 1 if survived_input == "Survived" else 0
     
     return prediction_inputs
 
