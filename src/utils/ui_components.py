@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from .model_factory import get_model_descriptions, get_metric_descriptions
 
 
 # Metrics configuration
@@ -53,8 +54,6 @@ def display_preprocessing_results(before_count, after_count, n_features, feature
     
     if before_count != after_count:
         st.warning(f"⚠️ Removed {before_count - after_count} rows with missing values")
-    
-    st.success(f"✅ Data preprocessing completed! Using {n_features} features: {', '.join(feature_list)}")
 
 
 def display_metrics_table(results_df, problem_type, selected_metrics):
@@ -383,4 +382,209 @@ def display_prediction_result(prediction, probability, y, problem_type):
                      annotation_text=f"Average: {y_mean:.2f}")
         fig.update_layout(title="Your Prediction vs Dataset Distribution")
         st.plotly_chart(fig, use_container_width=True)
+
+
+def inject_card_styles():
+    """Inject CSS styles for modern card design with hover animations."""
+    st.markdown("""
+        <style>
+        .info-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        .card-description {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+        
+        .card-section {
+            margin-top: 10px;
+        }
+        
+        .card-section-title {
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .card-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 5px 0;
+        }
+        
+        .card-list li {
+            padding: 3px 0;
+            color: #6c757d;
+            font-size: 0.85em;
+        }
+        
+        .card-list li:before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .card-formula {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #007bff;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .weakness-list li:before {
+            content: "⚠ ";
+            color: #ffc107;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+
+def render_model_info_cards(selected_models, problem_type):
+    """
+    Render information cards for selected models.
+    
+    Args:
+        selected_models (list): List of selected model names
+        problem_type (str): Either "Classification" or "Regression"
+    """
+    if not selected_models:
+        return
+    
+    model_descriptions = get_model_descriptions(problem_type)
+    
+    # Display in a grid with 4 columns
+    num_cols = min(4, len(selected_models))
+    cols = st.columns(num_cols)
+    
+    for idx, model_name in enumerate(selected_models):
+        col_idx = idx % num_cols
+        model_info = model_descriptions.get(model_name, {})
+        
+        with cols[col_idx]:
+            emoji = model_info.get("emoji", "🤖")
+            description = model_info.get("description", "")
+            strengths = model_info.get("strengths", [])
+            best_for = model_info.get("best_for", "")
+            
+            card_html = f"""
+            <div class="info-card">
+                <div class="card-title">
+                    <span class="card-emoji">{emoji}</span>
+                    <span>{model_name}</span>
+                </div>
+                <div class="card-description">{description}</div>
+            """
+            
+            if strengths:
+                card_html += """
+                <div class="card-section">
+                    <div class="card-section-title">Strengths:</div>
+                    <ul class="card-list">
+                """
+                for strength in strengths:
+                    card_html += f"<li>{strength}</li>"
+                card_html += "</ul></div>"
+            
+            if best_for:
+                card_html += f"""
+                <div class="card-section">
+                    <div class="card-section-title">Best for:</div>
+                    <div style="color: #6c757d; font-size: 0.85em;">{best_for}</div>
+                </div>
+                """
+            
+            card_html += "</div>"
+            st.markdown(card_html, unsafe_allow_html=True)
+
+
+def render_metric_info_cards(selected_metrics, problem_type):
+    """
+    Render information cards for selected metrics.
+    
+    Args:
+        selected_metrics (list): List of selected metric names
+        problem_type (str): Either "Classification" or "Regression"
+    """
+    if not selected_metrics:
+        return
+    
+    metric_descriptions = get_metric_descriptions(problem_type)
+    
+    # Display in a grid with 4 columns
+    num_cols = min(4, len(selected_metrics))
+    cols = st.columns(num_cols)
+    
+    for idx, metric_name in enumerate(selected_metrics):
+        col_idx = idx % num_cols
+        metric_info = metric_descriptions.get(metric_name, {})
+        
+        with cols[col_idx]:
+            emoji = metric_info.get("emoji", "📊")
+            description = metric_info.get("description", "")
+            formula = metric_info.get("formula", "")
+            usage = metric_info.get("usage", "")
+            strengths = metric_info.get("strengths", [])
+            weaknesses = metric_info.get("weaknesses", [])
+            
+            # Use Streamlit components instead of raw HTML
+            with st.container():
+                st.markdown(f"""
+                <div class="info-card">
+                    <div class="card-title">
+                        <span class="card-emoji">{emoji}</span>
+                        <span>{metric_name}</span>
+                    </div>
+                    <div class="card-description">{description}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if usage:
+                    st.markdown("**When to use:**")
+                    st.markdown(f"*{usage}*")
+                
+                if strengths:
+                    st.markdown("**Strengths:**")
+                    for strength in strengths:
+                        st.markdown(f"✓ {strength}")
+                
+                if weaknesses:
+                    st.markdown("**Weaknesses:**")
+                    for weakness in weaknesses:
+                        st.markdown(f"⚠️ {weakness}")
+                
+                # Display formula separately if it exists
+                if formula:
+                    st.latex(formula)
 

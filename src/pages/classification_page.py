@@ -17,7 +17,8 @@ from ..utils.visualization import (
 )
 from ..utils.ui_components import (
     display_model_metrics_columns, display_metrics_table, render_hyperparameter_controls,
-    render_prediction_inputs, display_prediction_result
+    render_prediction_inputs, display_prediction_result, inject_card_styles,
+    render_model_info_cards, render_metric_info_cards
 )
 from ..utils.toc import init_toc, render_toc, toc_markdown, toc_header, toc_subheader, toc_subsubheader
 
@@ -31,6 +32,9 @@ def render_classification_page():
     """Render the classification page."""
     # Initialize TOC
     init_toc()
+    
+    # Inject card styles
+    inject_card_styles()
     
     # Check if preprocessing is done
     if 'X' not in st.session_state:
@@ -66,6 +70,11 @@ def render_classification_page():
         args=("_classification_models", "classification_models")
     )
     
+    # Display model information cards
+    if selected_models:
+        toc_subsubheader("🎓 Learn About Your Selected Models")
+        render_model_info_cards(selected_models, "Classification")
+    
     # Metric selection
     toc_subheader("📊 Metric Selection")
     
@@ -84,6 +93,11 @@ def render_classification_page():
         on_change=save_to_state,
         args=("_classification_metrics", "classification_metrics")
     )
+    
+    # Display metric information cards
+    if selected_metrics:
+        toc_subsubheader("📚 Understanding Your Selected Metrics")
+        render_metric_info_cards(selected_metrics, "Classification")
     
     # Get test size from session state
     test_size = st.session_state.get("test_size", 20)

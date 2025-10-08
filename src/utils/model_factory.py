@@ -293,3 +293,77 @@ def create_model(model_name, problem_type, hyperparams):
     
     raise ValueError(f"Unknown model: {model_name} for {problem_type}")
 
+
+def get_metric_descriptions(problem_type):
+    """
+    Get detailed metric descriptions for UI display.
+    
+    Args:
+        problem_type (str): Either "Classification" or "Regression"
+        
+    Returns:
+        dict: Dictionary mapping metric names to description dictionaries
+    """
+    if problem_type == "Classification":
+        return {
+            "Accuracy": {
+                "emoji": "🎯",
+                "description": "Proportion of correct predictions over all predictions",
+                "formula": r"\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}",
+                "usage": "Overall performance measure",
+                "strengths": ["Simple to understand", "Good for balanced datasets"],
+                "weaknesses": ["Misleading on imbalanced data", "Doesn't distinguish error types"]
+            },
+            "Precision": {
+                "emoji": "🔍",
+                "description": "Proportion of correct positive predictions over all positive predictions",
+                "formula": r"\text{Precision} = \frac{TP}{TP + FP}",
+                "usage": "Important when false positives are costly",
+                "strengths": ["Reduces false alarms", "Focuses on positive class quality"],
+                "weaknesses": ["Ignores false negatives", "Can be high with few predictions"]
+            },
+            "Recall": {
+                "emoji": "📡",
+                "description": "Proportion of actual positives that were correctly identified",
+                "formula": r"\text{Recall} = \frac{TP}{TP + FN}",
+                "usage": "Important when missing positives is costly",
+                "strengths": ["Captures all positive cases", "Good for rare events"],
+                "weaknesses": ["Ignores false positives", "Can be high with many predictions"]
+            },
+            "F1": {
+                "emoji": "⚖️",
+                "description": "Harmonic mean of Precision and Recall",
+                "formula": r"F1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}",
+                "usage": "Balanced measure when you care about both precision and recall",
+                "strengths": ["Balances precision and recall", "Good for imbalanced data"],
+                "weaknesses": ["Less interpretable than accuracy", "Ignores true negatives"]
+            }
+        }
+    else:  # Regression
+        return {
+            "R²": {
+                "emoji": "📈",
+                "description": "Coefficient of determination - proportion of variance explained by the model",
+                "formula": r"R^2 = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}",
+                "usage": "Overall model fit quality",
+                "strengths": ["Scale-independent", "Easy to interpret (0 to 1)", "Comparable across datasets"],
+                "weaknesses": ["Can be negative for bad models", "Increases with more features"]
+            },
+            "RMSE": {
+                "emoji": "📏",
+                "description": "Root Mean Squared Error - average prediction error in original units",
+                "formula": r"\text{RMSE} = \sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}",
+                "usage": "Penalizes large errors more heavily",
+                "strengths": ["Same units as target", "Penalizes outliers"],
+                "weaknesses": ["Sensitive to outliers", "Scale-dependent"]
+            },
+            "MAE": {
+                "emoji": "📐",
+                "description": "Mean Absolute Error - average absolute prediction error",
+                "formula": r"\text{MAE} = \frac{1}{n}\sum|y_i - \hat{y}_i|",
+                "usage": "Robust measure of average error",
+                "strengths": ["Same units as target", "Robust to outliers", "Easy to interpret"],
+                "weaknesses": ["Doesn't penalize large errors", "Scale-dependent"]
+            }
+        }
+

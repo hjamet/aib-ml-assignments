@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from ..utils.preprocessing import preprocess_data, get_feature_mapping, get_reverse_feature_mapping
+from ..utils.preprocessing import preprocess_data, get_feature_mapping, get_reverse_feature_mapping, get_categorical_feature_names
 from ..utils.ui_components import display_preprocessing_results, display_dataset_overview
 from ..utils.toc import init_toc, render_toc, toc_markdown, toc_subheader
 
@@ -133,6 +133,11 @@ def render_preprocessing_page(df):
     
     # ===== TWO-COLUMN LAYOUT =====
     toc_markdown('<h2 class="section-header">📊 Data Comparison</h2>', level=1, unsafe_allow_html=True)
+    
+    # Display preprocessing success message if features are selected
+    if st.session_state.get("selected_features"):
+        selected_features = st.session_state.selected_features
+        st.success(f"✅ Data preprocessing completed! Using {len(selected_features)} features: {', '.join(selected_features)}")
     
     col_left, col_right = st.columns(2)
     

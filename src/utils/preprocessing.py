@@ -47,6 +47,16 @@ def get_reverse_feature_mapping():
     return reverse_map
 
 
+def get_categorical_feature_names():
+    """
+    Get the list of user-friendly feature names that are categorical.
+    
+    Returns:
+        list: List of categorical feature names
+    """
+    return ['Sex', 'Port of Embarkation']
+
+
 def get_categorical_columns(df):
     """
     Identify categorical columns in dataframe.
@@ -173,16 +183,16 @@ def preprocess_data(df, selected_features, missing_age_option, normalize,
     
     after_count = len(X)
     
-    # Create transformed dataframe for display (before normalization)
-    df_transformed = X.copy()
-    df_transformed[target_column] = y
-    
     # Normalize if requested
     scaler = None
     if normalize:
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X)
         X = pd.DataFrame(X_scaled, columns=X.columns, index=X.index)
+    
+    # Create transformed dataframe for display (after normalization)
+    df_transformed = X.copy()
+    df_transformed[target_column] = y
     
     return X, y, feature_names, scaler, before_count, after_count, df_transformed
 
