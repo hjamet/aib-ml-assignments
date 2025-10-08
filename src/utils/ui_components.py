@@ -498,26 +498,28 @@ def render_model_info_cards(selected_models, problem_type):
             strengths = model_info.get("strengths", [])
             best_for = model_info.get("best_for", "")
             
-            # Simple HTML card with just title and description
+            # Build content HTML to put everything inside the card
+            content_html = f'<div class="card-description">{description}</div>'
+            
+            if strengths:
+                content_html += '<div class="card-section"><div class="card-section-title">Strengths:</div><ul class="card-list">'
+                for strength in strengths:
+                    content_html += f'<li>{strength}</li>'
+                content_html += '</ul></div>'
+            
+            if best_for:
+                content_html += f'<div class="card-section"><div class="card-section-title">Best for:</div><div style="color: #6c757d; font-size: 0.85em;">{best_for}</div></div>'
+            
+            # Display complete card with all content inside
             st.markdown(f"""
             <div class="info-card">
                 <div class="card-title">
                     <span class="card-emoji">{emoji}</span>
                     <span>{model_name}</span>
                 </div>
-                <div class="card-description">{description}</div>
+                {content_html}
             </div>
             """, unsafe_allow_html=True)
-            
-            # Use native Streamlit components for additional info
-            if strengths:
-                st.markdown("**Strengths:**")
-                for strength in strengths:
-                    st.markdown(f"✓ {strength}")
-            
-            if best_for:
-                st.markdown("**Best for:**")
-                st.markdown(f"*{best_for}*")
 
 
 def render_metric_info_cards(selected_metrics, problem_type):
@@ -567,6 +569,9 @@ def render_metric_info_cards(selected_metrics, problem_type):
                     content_html += f'<li>{weakness}</li>'
                 content_html += '</ul></div>'
             
+            # Note: LaTeX formulas cannot be properly rendered inside HTML cards in Streamlit
+            # They would need to be displayed separately with st.latex(), which breaks the card design
+            
             # Display complete card with all content inside
             st.markdown(f"""
             <div class="info-card">
@@ -577,17 +582,4 @@ def render_metric_info_cards(selected_metrics, problem_type):
                 {content_html}
             </div>
             """, unsafe_allow_html=True)
-            
-            # Display formula below the card (as requested, formula should be included in card)
-            if formula:
-                st.markdown(f"""
-                <div class="info-card" style="margin-top: -10px; padding-top: 10px;">
-                    <div class="card-section">
-                        <div class="card-section-title">Formula:</div>
-                        <div style="text-align: center; padding: 10px;">
-                            ${formula}$
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
 
