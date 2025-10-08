@@ -310,11 +310,13 @@ def render_preprocessing_page(df):
                                  color_discrete_sequence=['purple'])
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Target correlation plot
+                # Target correlation plot - Bar chart showing target rate by feature
                 if target_column_val in df_transformed.columns:
-                    fig = px.scatter(df_transformed, x=exploration_feature_right, y=target_column_val,
-                                   title=f'{exploration_feature_right} vs {target_column_val}',
-                                   color_discrete_sequence=['green'])
+                    target_by_feature = df_transformed.groupby(exploration_feature_right)[target_column_val].mean().reset_index()
+                    fig = px.bar(target_by_feature, x=exploration_feature_right, y=target_column_val,
+                                title=f'{target_column_val.title()} Rate by {exploration_feature_right}',
+                                color_discrete_sequence=['orange'])
+                    fig.update_yaxes(title=f'{target_column_val.title()} Rate')
                     st.plotly_chart(fig, use_container_width=True)
                 
                 # Insights for transformed features (same as original)
