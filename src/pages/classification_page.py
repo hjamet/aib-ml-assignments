@@ -101,19 +101,39 @@ def render_classification_page():
             fig_test = create_test_metrics_chart(results_df, "Classification")
             st.plotly_chart(fig_test, use_container_width=True)
         
-        # Best model based on test accuracy
-        best_model_name = results_df.loc[results_df['Test Accuracy'].idxmax(), 'Model']
-        best_model = models[best_model_name]
-        y_pred_best = best_model.predict(X_test)
+        # Model Exploration - Allow student to select any trained model
+        st.markdown("### 🔍 Model Exploration")
+        st.info("💡 Select a model below to explore its detailed results and performance metrics.")
         
-        st.subheader(f"🏆 Best Model: {best_model_name}")
+        # Initialize temp key from permanent key if needed
+        if "_selected_exploration_model_classification" not in st.session_state:
+            default_model = st.session_state.get("selected_exploration_model_classification", selected_models[0])
+            if default_model not in selected_models:
+                default_model = selected_models[0]
+            st.session_state["_selected_exploration_model_classification"] = default_model
+        
+        # Validate that saved value is still valid
+        if st.session_state["_selected_exploration_model_classification"] not in selected_models:
+            st.session_state["_selected_exploration_model_classification"] = selected_models[0]
+        
+        selected_model_name = st.selectbox(
+            "Choose a model to explore:",
+            selected_models,
+            index=selected_models.index(st.session_state["_selected_exploration_model_classification"]),
+            key="_selected_exploration_model_classification",
+            on_change=save_to_state,
+            args=("_selected_exploration_model_classification", "selected_exploration_model_classification")
+        )
+        
+        selected_model = models[selected_model_name]
+        y_pred_selected = selected_model.predict(X_test)
         
         # Confusion Matrices - Train and Test
-        st.markdown("### 🔍 Confusion Matrices")
+        st.markdown(f"### 🔍 Confusion Matrices - {selected_model_name}")
         
-        y_pred_train = best_model.predict(X_train)
+        y_pred_train = selected_model.predict(X_train)
         cm_train = confusion_matrix(y_train, y_pred_train)
-        cm_test = confusion_matrix(y_test, y_pred_best)
+        cm_test = confusion_matrix(y_test, y_pred_selected)
         
         col_train, col_test = st.columns(2)
         
@@ -153,7 +173,7 @@ def render_classification_page():
         
         # 2D Visualization
         if len(feature_names) >= 2:
-            st.subheader("📊 2D Feature Visualization")
+            st.subheader(f"📊 2D Feature Visualization - {selected_model_name}")
             
             col1, col2 = st.columns(2)
             with col1:
@@ -200,38 +220,38 @@ def render_classification_page():
                 )
             
             if len(feature_names) == 2:
-                st.info("🎯 **Perfect!** With exactly 2 features, you can see how the classifier creates decision boundaries!")
-                fig = create_decision_boundary_plot(X_train, y_train, best_model, feature_x, feature_y, best_model_name)
+                st.info(f"🎯 **Perfect!** With exactly 2 features, you can see how {selected_model_name} creates decision boundaries!")
+                fig = create_decision_boundary_plot(X_train, y_train, selected_model, feature_x, feature_y, selected_model_name)
                 st.plotly_chart(fig, use_container_width=True)
-                st.info("💡 **Decision Boundary**: The colored regions show where the model predicts each class. Points show actual data.")
+                st.info(f"💡 **Decision Boundary for {selected_model_name}**: The colored regions show where the model predicts each class. Points show actual data.")
             else:
-                fig = create_2d_scatter_plot(X_test, y_test, y_pred_best, feature_x, feature_y, "Classification", "Survived")
+                fig = create_2d_scatter_plot(X_test, y_test, y_pred_selected, feature_x, feature_y, "Classification", "Survived")
                 st.plotly_chart(fig, use_container_width=True)
-                st.info("💡 **2D Feature Plot**: Each point is a passenger. Colors show actual vs predicted classes. Look for patterns!")
+                st.info(f"💡 **2D Feature Plot for {selected_model_name}**: Each point is a passenger. Colors show actual vs predicted classes. Look for patterns!")
         
         # Feature Importance
-        if hasattr(best_model, 'feature_importances_'):
-            st.subheader("🎯 Feature Importance")
+        if hasattr(selected_model, 'feature_importances_'):
+            st.subheader(f"🎯 Feature Importance - {selected_model_name}")
             
-            fig = create_feature_importance_plot(feature_names, best_model.feature_importances_, best_model_name)
+            fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
             
-            st.info(f"💡 **Feature Importance** shows which passenger characteristics the {best_model_name} considers most important for predicting survival.")
+            st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important for predicting survival.")
         
-        elif hasattr(best_model, 'coef_'):
-            st.subheader("🎯 Feature Coefficients")
+        elif hasattr(selected_model, 'coef_'):
+            st.subheader(f"🎯 Feature Coefficients - {selected_model_name}")
             
             # Handle both 1D and 2D coefficient arrays
-            coef = best_model.coef_[0] if len(best_model.coef_.shape) > 1 else best_model.coef_
-            fig = create_feature_coefficients_plot(feature_names, coef, best_model_name)
+            coef = selected_model.coef_[0] if len(selected_model.coef_.shape) > 1 else selected_model.coef_
+            fig = create_feature_coefficients_plot(feature_names, coef, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
             
-            st.info(f"💡 **Feature Coefficients** show how much each feature influences the {best_model_name}'s predictions. Positive values increase survival probability, negative values decrease it.")
+            st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions. Positive values increase survival probability, negative values decrease it.")
         
         # Interactive Prediction
         st.markdown('<h2 class="section-header">🔮 Make Your Own Predictions</h2>', unsafe_allow_html=True)
         
-        st.markdown("Try different passenger profiles and see what the AI predicts!")
+        st.markdown(f"Try different passenger profiles and see what **{selected_model_name}** predicts!")
         
         col1, col2 = st.columns(2)
         
@@ -262,8 +282,8 @@ def render_classification_page():
                 if normalize_features and scaler is not None:
                     input_array = scaler.transform(input_array)
                 
-                prediction = best_model.predict(input_array)[0]
-                probability = best_model.predict_proba(input_array)[0]
+                prediction = selected_model.predict(input_array)[0]
+                probability = selected_model.predict_proba(input_array)[0]
                 
                 display_prediction_result(prediction, probability, y, "Classification")
 

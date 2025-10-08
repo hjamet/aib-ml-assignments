@@ -101,44 +101,64 @@ def render_regression_page():
             fig_test = create_test_metrics_chart(results_df, "Regression")
             st.plotly_chart(fig_test, use_container_width=True)
         
-        # Best model based on test R²
-        best_model_name = results_df.loc[results_df['Test R²'].idxmax(), 'Model']
-        best_model = models[best_model_name]
-        y_pred_best = best_model.predict(X_test)
+        # Model Exploration - Allow student to select any trained model
+        st.markdown("### 🔍 Model Exploration")
+        st.info("💡 Select a model below to explore its detailed results and performance metrics.")
         
-        st.subheader(f"🏆 Best Model: {best_model_name}")
+        # Initialize temp key from permanent key if needed
+        if "_selected_exploration_model_regression" not in st.session_state:
+            default_model = st.session_state.get("selected_exploration_model_regression", selected_models[0])
+            if default_model not in selected_models:
+                default_model = selected_models[0]
+            st.session_state["_selected_exploration_model_regression"] = default_model
+        
+        # Validate that saved value is still valid
+        if st.session_state["_selected_exploration_model_regression"] not in selected_models:
+            st.session_state["_selected_exploration_model_regression"] = selected_models[0]
+        
+        selected_model_name = st.selectbox(
+            "Choose a model to explore:",
+            selected_models,
+            index=selected_models.index(st.session_state["_selected_exploration_model_regression"]),
+            key="_selected_exploration_model_regression",
+            on_change=save_to_state,
+            args=("_selected_exploration_model_regression", "selected_exploration_model_regression")
+        )
+        
+        selected_model = models[selected_model_name]
+        y_pred_selected = selected_model.predict(X_test)
         
         # Regression visualizations
-        st.markdown("### 📈 Regression Analysis")
+        st.markdown(f"### 📈 Regression Analysis - {selected_model_name}")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            fig = px.scatter(x=y_test, y=y_pred_best, 
-                           title="Actual vs Predicted Values",
+            fig = px.scatter(x=y_test, y=y_pred_selected, 
+                           title=f"Actual vs Predicted Values - {selected_model_name}",
                            labels={'x': 'Actual Values', 'y': 'Predicted Values'})
             # Add perfect prediction line
-            min_val, max_val = min(y_test.min(), y_pred_best.min()), max(y_test.max(), y_pred_best.max())
+            min_val, max_val = min(y_test.min(), y_pred_selected.min()), max(y_test.max(), y_pred_selected.max())
             fig.add_shape(type="line", x0=min_val, y0=min_val, x1=max_val, y1=max_val,
                         line=dict(color="red", width=2, dash="dash"))
             st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             # Residuals plot
-            residuals = y_test - y_pred_best
-            fig = px.scatter(x=y_pred_best, y=residuals,
-                           title="Residuals Plot",
+            residuals = y_test - y_pred_selected
+            fig = px.scatter(x=y_pred_selected, y=residuals,
+                           title=f"Residuals Plot - {selected_model_name}",
                            labels={'x': 'Predicted Values', 'y': 'Residuals'})
             fig.add_hline(y=0, line_dash="dash", line_color="red")
             st.plotly_chart(fig, use_container_width=True)
         
         # Metrics explanation
-        mse = mean_squared_error(y_test, y_pred_best)
-        mae = mean_absolute_error(y_test, y_pred_best)
-        r2 = r2_score(y_test, y_pred_best)
+        mse = mean_squared_error(y_test, y_pred_selected)
+        mae = mean_absolute_error(y_test, y_pred_selected)
+        r2 = r2_score(y_test, y_pred_selected)
         
         st.markdown(f"""
-        **📊 Regression Metrics Explained:**
+        **📊 Regression Metrics for {selected_model_name}:**
         - **R² Score: {r2:.3f}** - Proportion of variance explained (1.0 = perfect fit)
         - **RMSE: {np.sqrt(mse):.2f}** - Average prediction error in original units
         - **MAE: {mae:.2f}** - Mean absolute error (robust to outliers)
@@ -146,7 +166,7 @@ def render_regression_page():
         
         # 2D Visualization
         if len(feature_names) >= 2:
-            st.subheader("📊 2D Feature Visualization")
+            st.subheader(f"📊 2D Feature Visualization - {selected_model_name}")
             
             col1, col2 = st.columns(2)
             with col1:
@@ -193,35 +213,35 @@ def render_regression_page():
                 )
             
             if len(feature_names) == 2:
-                fig = create_regression_surface_plot(X_train, y_train, best_model, feature_x, feature_y, best_model_name, "Survived")
+                fig = create_regression_surface_plot(X_train, y_train, selected_model, feature_x, feature_y, selected_model_name, "Survived")
                 st.plotly_chart(fig, use_container_width=True)
-                st.info("💡 **Prediction Surface**: The colored surface shows the model's predictions across the feature space.")
+                st.info(f"💡 **Prediction Surface for {selected_model_name}**: The colored surface shows the model's predictions across the feature space.")
             else:
-                fig = create_2d_scatter_plot(X_test, y_test, y_pred_best, feature_x, feature_y, "Regression", "Survived")
+                fig = create_2d_scatter_plot(X_test, y_test, y_pred_selected, feature_x, feature_y, "Regression", "Survived")
                 st.plotly_chart(fig, use_container_width=True)
-                st.info("💡 **2D Feature Plot**: Each point is a passenger. Color intensity shows the target value. Size shows prediction accuracy.")
+                st.info(f"💡 **2D Feature Plot for {selected_model_name}**: Each point is a passenger. Color intensity shows the target value. Size shows prediction accuracy.")
         
         # Feature Importance
-        if hasattr(best_model, 'feature_importances_'):
-            st.subheader("🎯 Feature Importance")
+        if hasattr(selected_model, 'feature_importances_'):
+            st.subheader(f"🎯 Feature Importance - {selected_model_name}")
             
-            fig = create_feature_importance_plot(feature_names, best_model.feature_importances_, best_model_name)
+            fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
             
-            st.info(f"💡 **Feature Importance** shows which passenger characteristics the {best_model_name} considers most important.")
+            st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important.")
         
-        elif hasattr(best_model, 'coef_'):
-            st.subheader("🎯 Feature Coefficients")
+        elif hasattr(selected_model, 'coef_'):
+            st.subheader(f"🎯 Feature Coefficients - {selected_model_name}")
             
-            fig = create_feature_coefficients_plot(feature_names, best_model.coef_, best_model_name)
+            fig = create_feature_coefficients_plot(feature_names, selected_model.coef_, selected_model_name)
             st.plotly_chart(fig, use_container_width=True)
             
-            st.info(f"💡 **Feature Coefficients** show how much each feature influences the {best_model_name}'s predictions.")
+            st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions.")
         
         # Interactive Prediction
         st.markdown('<h2 class="section-header">🔮 Make Your Own Predictions</h2>', unsafe_allow_html=True)
         
-        st.markdown("Try different passenger profiles and see what the AI predicts!")
+        st.markdown(f"Try different passenger profiles and see what **{selected_model_name}** predicts!")
         
         col1, col2 = st.columns(2)
         
@@ -252,7 +272,7 @@ def render_regression_page():
                 if normalize_features and scaler is not None:
                     input_array = scaler.transform(input_array)
                 
-                prediction = best_model.predict(input_array)[0]
+                prediction = selected_model.predict(input_array)[0]
                 
                 display_prediction_result(prediction, None, y, "Regression")
 
