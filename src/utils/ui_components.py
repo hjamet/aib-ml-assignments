@@ -338,26 +338,53 @@ def display_prediction_result(prediction, probability, y, problem_type):
         problem_type (str): Either "Classification" or "Regression"
     """
     if problem_type == "Classification":
-        if prediction == 1:
-            st.success(f"🎉 **SURVIVAL PREDICTED!**")
-            st.success(f"Confidence: {probability[1]:.1%}")
+        # Get unique classes from y
+        unique_classes = sorted(y.unique())
+        n_classes = len(unique_classes)
+        
+        # Check if binary classification with survived target
+        if n_classes == 2 and set(unique_classes) == {0, 1}:
+            # Binary classification with survived/not survived
+            if prediction == 1:
+                st.success(f"🎉 **SURVIVAL PREDICTED!**")
+                st.success(f"Confidence: {probability[1]:.1%}")
+            else:
+                st.error(f"💔 **Did not survive**")
+                st.error(f"Confidence: {probability[0]:.1%}")
+            
+            # Show probability breakdown
+            import pandas as pd
+            prob_df = pd.DataFrame({
+                'Outcome': ['Did not survive', 'Survived'],
+                'Probability': probability
+            })
+            
+            fig = px.bar(prob_df, x='Outcome', y='Probability', 
+                       title='Prediction Confidence',
+                       color='Probability',
+                       color_continuous_scale='RdYlGn')
+            fig.update_yaxes(range=[0, 1])
+            st.plotly_chart(fig, use_container_width=True)
         else:
-            st.error(f"💔 **Did not survive**")
-            st.error(f"Confidence: {probability[0]:.1%}")
-        
-        # Show probability breakdown
-        import pandas as pd
-        prob_df = pd.DataFrame({
-            'Outcome': ['Did not survive', 'Survived'],
-            'Probability': probability
-        })
-        
-        fig = px.bar(prob_df, x='Outcome', y='Probability', 
-                   title='Prediction Confidence',
-                   color='Probability',
-                   color_continuous_scale='RdYlGn')
-        fig.update_yaxes(range=[0, 1])
-        st.plotly_chart(fig, use_container_width=True)
+            # Multi-class classification
+            # Find the index of the predicted class in the unique_classes list
+            pred_idx = unique_classes.index(prediction) if prediction in unique_classes else 0
+            st.success(f"🎯 **PREDICTED CLASS: {prediction}**")
+            st.success(f"Confidence: {probability[pred_idx]:.1%}")
+            
+            # Show probability breakdown for all classes
+            import pandas as pd
+            prob_df = pd.DataFrame({
+                'Class': [str(cls) for cls in unique_classes],
+                'Probability': probability
+            })
+            
+            fig = px.bar(prob_df, x='Class', y='Probability', 
+                       title='Prediction Confidence by Class',
+                       color='Probability',
+                       color_continuous_scale='RdYlGn')
+            fig.update_yaxes(range=[0, 1])
+            st.plotly_chart(fig, use_container_width=True)
     else:  # Regression
         st.success(f"🎯 **Predicted Value: {prediction:.2f}**")
         

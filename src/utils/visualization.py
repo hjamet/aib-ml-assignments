@@ -325,21 +325,30 @@ def create_test_metrics_chart(results_df, problem_type, selected_metrics=None):
     return fig
 
 
-def create_confusion_matrix_plot(cm, title="Confusion Matrix - Test Set"):
+def create_confusion_matrix_plot(cm, title="Confusion Matrix - Test Set", class_labels=None):
     """Create a heatmap for the confusion matrix"""
+    # Generate labels dynamically based on the matrix size
+    n_classes = cm.shape[0]
+    if class_labels is not None:
+        labels = [str(label) for label in class_labels]
+    elif n_classes == 2:
+        labels = ['Did not survive', 'Survived']
+    else:
+        labels = [f'Class {i}' for i in range(n_classes)]
+    
     fig = px.imshow(cm, 
                    labels=dict(x="Predicted", y="Actual", color="Count"),
-                   x=['Did not survive', 'Survived'],
-                   y=['Did not survive', 'Survived'],
+                   x=labels,
+                   y=labels,
                    color_continuous_scale='Blues',
                    title=title)
     fig.update_traces(text=cm, texttemplate="%{text}")
     return fig
 
 
-def create_confusion_matrix_train_plot(cm):
+def create_confusion_matrix_train_plot(cm, class_labels=None):
     """Create a heatmap for the confusion matrix on training set"""
-    return create_confusion_matrix_plot(cm, title="Confusion Matrix - Train Set")
+    return create_confusion_matrix_plot(cm, title="Confusion Matrix - Train Set", class_labels=class_labels)
 
 
 def create_feature_importance_plot(feature_names, importances, model_name):

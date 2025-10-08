@@ -180,41 +180,65 @@ def render_classification_page():
         cm_train = confusion_matrix(y_train, y_pred_train)
         cm_test = confusion_matrix(y_test, y_pred_selected)
         
+        # Get unique class labels for proper display
+        class_labels = sorted(y.unique())
+        
+        # Check if this is the 'survived' target (binary with values 0 and 1)
+        target_name = st.session_state.get('target_column_persistent', 'target')
+        if target_name == 'survived' and len(class_labels) == 2 and set(class_labels) == {0, 1}:
+            display_labels = None  # Use default "Did not survive" / "Survived" labels
+        else:
+            display_labels = class_labels
+        
         col_train, col_test = st.columns(2)
         
         with col_train:
-            fig_train = create_confusion_matrix_train_plot(cm_train)
+            fig_train = create_confusion_matrix_train_plot(cm_train, class_labels=display_labels)
             st.plotly_chart(fig_train, use_container_width=True)
             
-            tn_train, fp_train, fn_train, tp_train = cm_train.ravel()
-            total_train = tn_train + fp_train + fn_train + tp_train
-            
-            st.markdown("#### 📊 Train Set Metrics:")
-            st.markdown(f"""
-            - **True Negatives:** {tn_train}
-            - **False Positives:** {fp_train}
-            - **False Negatives:** {fn_train}
-            - **True Positives:** {tp_train}
-            
-            **Accuracy:** {(tp_train+tn_train)/total_train:.1%}
-            """)
+            # Only show detailed metrics for binary classification
+            if cm_train.shape[0] == 2:
+                tn_train, fp_train, fn_train, tp_train = cm_train.ravel()
+                total_train = tn_train + fp_train + fn_train + tp_train
+                
+                st.markdown("#### 📊 Train Set Metrics:")
+                st.markdown(f"""
+                - **True Negatives:** {tn_train}
+                - **False Positives:** {fp_train}
+                - **False Negatives:** {fn_train}
+                - **True Positives:** {tp_train}
+                
+                **Accuracy:** {(tp_train+tn_train)/total_train:.1%}
+                """)
+            else:
+                # For multi-class, show overall accuracy
+                accuracy_train = np.trace(cm_train) / np.sum(cm_train)
+                st.markdown("#### 📊 Train Set Metrics:")
+                st.markdown(f"**Accuracy:** {accuracy_train:.1%}")
         
         with col_test:
-            fig_test = create_confusion_matrix_plot(cm_test)
+            fig_test = create_confusion_matrix_plot(cm_test, class_labels=display_labels)
             st.plotly_chart(fig_test, use_container_width=True)
             
-            tn_test, fp_test, fn_test, tp_test = cm_test.ravel()
-            total_test = tn_test + fp_test + fn_test + tp_test
-            
-            st.markdown("#### 📊 Test Set Metrics:")
-            st.markdown(f"""
-            - **True Negatives:** {tn_test}
-            - **False Positives:** {fp_test}
-            - **False Negatives:** {fn_test}
-            - **True Positives:** {tp_test}
-            
-            **Accuracy:** {(tp_test+tn_test)/total_test:.1%}
-            """)
+            # Only show detailed metrics for binary classification
+            if cm_test.shape[0] == 2:
+                tn_test, fp_test, fn_test, tp_test = cm_test.ravel()
+                total_test = tn_test + fp_test + fn_test + tp_test
+                
+                st.markdown("#### 📊 Test Set Metrics:")
+                st.markdown(f"""
+                - **True Negatives:** {tn_test}
+                - **False Positives:** {fp_test}
+                - **False Negatives:** {fn_test}
+                - **True Positives:** {tp_test}
+                
+                **Accuracy:** {(tp_test+tn_test)/total_test:.1%}
+                """)
+            else:
+                # For multi-class, show overall accuracy
+                accuracy_test = np.trace(cm_test) / np.sum(cm_test)
+                st.markdown("#### 📊 Test Set Metrics:")
+                st.markdown(f"**Accuracy:** {accuracy_test:.1%}")
         
         # 2D Visualization
         if len(feature_names) >= 2:
