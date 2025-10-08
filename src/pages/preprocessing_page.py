@@ -3,9 +3,10 @@ Preprocessing and Exploration page for the ML Demo application.
 """
 
 import streamlit as st
+import pandas as pd
 import plotly.express as px
 
-from ..utils.preprocessing import preprocess_data
+from ..utils.preprocessing import preprocess_data, get_feature_mapping
 from ..utils.ui_components import display_preprocessing_results, display_dataset_overview
 
 
@@ -21,76 +22,48 @@ def render_preprocessing_page(df):
     Args:
         df (pd.DataFrame): The Titanic dataset
     """
-    # Dataset overview
-    st.markdown('<h2 class="section-header">📊 Dataset Overview</h2>', unsafe_allow_html=True)
-    display_dataset_overview(df)
+    # ===== CONFIGURATION SECTION =====
+    st.markdown('<h2 class="section-header">🔧 Configuration</h2>', unsafe_allow_html=True)
     
-    # Show sample data
-    if st.checkbox("📋 Show Sample Data", value=True, key="preprocessing_show_sample"):
-        st.dataframe(df.head(10), use_container_width=True)
+    # Target variable selection
+    target_options = list(df.columns)
+    if "_target_column" not in st.session_state:
+        st.session_state["_target_column"] = st.session_state.get("target_column", "survived")
     
-    st.markdown('<h2 class="section-header">🔍 Interactive Data Exploration</h2>', unsafe_allow_html=True)
+    # Validate target is still in columns
+    if st.session_state["_target_column"] not in target_options:
+        st.session_state["_target_column"] = "survived"
     
-    feature_options = ["sex", "pclass", "age", "fare", "embarked"]
-    feature_labels = {
-        "sex": "👥 Gender", 
-        "pclass": "🎫 Passenger Class",
-        "age": "👶 Age",
-        "fare": "💰 Fare",
-        "embarked": "🚢 Port of Embarkation"
-    }
-    
-    # Initialize temp key from permanent key if needed
-    if "_exploration_feature" not in st.session_state:
-        st.session_state["_exploration_feature"] = st.session_state.get("exploration_feature", "sex")
-    
-    exploration_feature = st.selectbox(
-        "🔍 Explore Feature:",
-        feature_options,
-        index=feature_options.index(st.session_state["_exploration_feature"]),
-        format_func=lambda x: feature_labels[x],
-        key="_exploration_feature",
+    target_column = st.selectbox(
+        "🎯 Target Variable (to predict):",
+        target_options,
+        index=target_options.index(st.session_state["_target_column"]),
+        key="_target_column",
         on_change=save_to_state,
-        args=("_exploration_feature", "exploration_feature")
+        args=("_target_column", "target_column"),
+        help="Select which variable you want to predict"
     )
     
-    # Create exploration plots
-    col1, col2 = st.columns(2)
+    # Warning for non-numeric targets
+    if not pd.api.types.is_numeric_dtype(df[target_column]):
+        st.warning(f"⚠️ '{target_column}' is categorical. It will be encoded for Classification models.")
     
-    with col1:
-        if exploration_feature in ['age', 'fare']:
-            fig = px.histogram(df, x=exploration_feature, title=f'Distribution of {exploration_feature.title()}',
-                             color_discrete_sequence=['skyblue'])
-            st.plotly_chart(fig, use_container_width=True)
-        else:
-            fig = px.histogram(df, x=exploration_feature, title=f'Distribution of {exploration_feature.title()}',
-                             color_discrete_sequence=['lightgreen'])
-            st.plotly_chart(fig, use_container_width=True)
+    # Categorical encoding method
+    encoding_options = ["Drop Columns", "Label Encoding", "One-Hot Encoding"]
+    if "_encoding_method" not in st.session_state:
+        st.session_state["_encoding_method"] = st.session_state.get("encoding_method", "Drop Columns")
     
-    with col2:
-        survival_by_feature = df.groupby(exploration_feature)['survived'].mean().reset_index()
-        fig = px.bar(survival_by_feature, x=exploration_feature, y='survived',
-                    title=f'Survival Rate by {exploration_feature.title()}',
-                    color_discrete_sequence=['orange'])
-        fig.update_yaxes(title='Survival Rate')
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Insights
-    insights = {
-        'sex': "👩‍👩‍👧‍👦 Women had much higher survival rates than men ('Women and children first!')",
-        'pclass': "🥇 First-class passengers had better survival chances than lower classes",
-        'age': "👶 Children and young adults generally had better survival chances",
-        'fare': "💎 Passengers who paid higher fares (likely in better cabins) survived more often",
-        'embarked': "🚢 The port of embarkation might indicate passenger class or cabin location"
-    }
-    
-    st.info(f"💡 **Insight:** {insights[exploration_feature]}")
-    
-    # Section 2: Data Preprocessing
-    st.markdown('<h2 class="section-header">🔧 Data Preprocessing</h2>', unsafe_allow_html=True)
+    st.selectbox(
+        "🔤 Categorical Features Encoding:",
+        encoding_options,
+        index=encoding_options.index(st.session_state["_encoding_method"]),
+        key="_encoding_method",
+        on_change=save_to_state,
+        args=("_encoding_method", "encoding_method"),
+        help="How to handle text/categorical columns: sex, embarked, class, deck, etc."
+    )
     
     # Preprocessing controls
-    # Initialize temp keys from permanent keys if needed
     if "_missing_age_option" not in st.session_state:
         st.session_state["_missing_age_option"] = st.session_state.get("missing_age_option", "Fill with median")
     if "_normalize_features" not in st.session_state:
@@ -118,10 +91,23 @@ def render_preprocessing_page(df):
         args=("_normalize_features", "normalize_features")
     )
     
+    # Feature selection - exclude target column
     feature_options = ["Age", "Sex", "Passenger Class", "Fare", "Siblings/Spouses", "Parents/Children", "Port of Embarkation"]
+    feature_mapping = get_feature_mapping()
+    
+    # Exclure la target des features sélectionnables
+    available_features = [f for f in feature_options 
+                         if feature_mapping.get(f) != st.session_state.target_column]
+    
+    # Validate selected features
+    valid_selected = [f for f in st.session_state["_selected_features"] if f in available_features]
+    if not valid_selected:
+        valid_selected = [f for f in ["Age", "Sex", "Passenger Class", "Fare"] if f in available_features]
+    st.session_state["_selected_features"] = valid_selected
+    
     st.multiselect(
         "📊 Select Features:",
-        feature_options,
+        available_features,
         default=st.session_state["_selected_features"],
         key="_selected_features",
         on_change=save_to_state,
@@ -138,24 +124,167 @@ def render_preprocessing_page(df):
         args=("_test_size", "test_size")
     )
     
-    if st.session_state.get("selected_features"):
-        # Get values from permanent session_state keys
-        selected_features = st.session_state.selected_features
-        normalize_features = st.session_state.normalize_features
-        missing_age_option = st.session_state.missing_age_option
+    # ===== TWO-COLUMN LAYOUT =====
+    st.markdown('<h2 class="section-header">📊 Data Comparison</h2>', unsafe_allow_html=True)
+    
+    col_left, col_right = st.columns(2)
+    
+    # ===== LEFT COLUMN: ORIGINAL DATA =====
+    with col_left:
+        st.markdown("### 📄 Original Data")
         
-        # Preprocess data
-        X, y, feature_names, scaler, before_count, after_count = preprocess_data(
-            df, selected_features, missing_age_option, normalize_features
+        # Dataset overview
+        st.markdown("**Dataset Metrics:**")
+        display_dataset_overview(df)
+        
+        # Sample data with target highlighted
+        st.markdown(f"**🎯 Target Variable: `{st.session_state.target_column}`**")
+        # Try to highlight with emoji in column name
+        df_display = df.copy()
+        target_col = st.session_state.target_column
+        df_display = df_display.rename(columns={target_col: f"🎯 {target_col}"})
+        st.dataframe(df_display.head(10), use_container_width=True)
+        
+        # Interactive Exploration
+        st.markdown("**Data Exploration:**")
+        
+        feature_options_explore = ["sex", "pclass", "age", "fare", "embarked"]
+        feature_labels = {
+            "sex": "👥 Gender", 
+            "pclass": "🎫 Passenger Class",
+            "age": "👶 Age",
+            "fare": "💰 Fare",
+            "embarked": "🚢 Port of Embarkation"
+        }
+        
+        # Initialize temp key from permanent key if needed
+        if "_exploration_feature_left" not in st.session_state:
+            st.session_state["_exploration_feature_left"] = st.session_state.get("exploration_feature_left", "sex")
+        
+        # Validate
+        if st.session_state["_exploration_feature_left"] not in feature_options_explore:
+            st.session_state["_exploration_feature_left"] = "sex"
+        
+        exploration_feature_left = st.selectbox(
+            "Explore Feature:",
+            feature_options_explore,
+            index=feature_options_explore.index(st.session_state["_exploration_feature_left"]),
+            format_func=lambda x: feature_labels[x],
+            key="_exploration_feature_left",
+            on_change=save_to_state,
+            args=("_exploration_feature_left", "exploration_feature_left")
         )
         
-        # Store processed data in session state
-        st.session_state.X = X
-        st.session_state.y = y
-        st.session_state.feature_names = feature_names
-        st.session_state.scaler = scaler
-        st.session_state.selected_features_persistent = selected_features
+        # Distribution plot
+        if exploration_feature_left in ['age', 'fare']:
+            fig = px.histogram(df, x=exploration_feature_left, 
+                             title=f'Distribution of {exploration_feature_left.title()}',
+                             color_discrete_sequence=['skyblue'])
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            fig = px.histogram(df, x=exploration_feature_left, 
+                             title=f'Distribution of {exploration_feature_left.title()}',
+                             color_discrete_sequence=['lightgreen'])
+            st.plotly_chart(fig, use_container_width=True)
         
-        # Show preprocessing results
-        display_preprocessing_results(before_count, after_count, len(selected_features), selected_features)
-
+        # Survival rate plot (if survived column exists)
+        if 'survived' in df.columns:
+            survival_by_feature = df.groupby(exploration_feature_left)['survived'].mean().reset_index()
+            fig = px.bar(survival_by_feature, x=exploration_feature_left, y='survived',
+                        title=f'Survival Rate by {exploration_feature_left.title()}',
+                        color_discrete_sequence=['orange'])
+            fig.update_yaxes(title='Survival Rate')
+            st.plotly_chart(fig, use_container_width=True)
+        
+        # Insights
+        insights = {
+            'sex': "👩‍👩‍👧‍👦 Women had much higher survival rates than men ('Women and children first!')",
+            'pclass': "🥇 First-class passengers had better survival chances than lower classes",
+            'age': "👶 Children and young adults generally had better survival chances",
+            'fare': "💎 Passengers who paid higher fares (likely in better cabins) survived more often",
+            'embarked': "🚢 The port of embarkation might indicate passenger class or cabin location"
+        }
+        
+        st.info(f"💡 **Insight:** {insights.get(exploration_feature_left, 'Explore patterns in this feature!')}")
+    
+    # ===== RIGHT COLUMN: TRANSFORMED DATA =====
+    with col_right:
+        st.markdown("### ⚙️ Transformed Data")
+        
+        if st.session_state.get("selected_features"):
+            # Get values from permanent session_state keys
+            selected_features = st.session_state.selected_features
+            normalize_features = st.session_state.normalize_features
+            missing_age_option = st.session_state.missing_age_option
+            target_column_val = st.session_state.target_column
+            encoding_method_val = st.session_state.encoding_method
+            
+            # Preprocess data
+            X, y, feature_names, scaler, before_count, after_count, df_transformed = preprocess_data(
+                df, selected_features, missing_age_option, normalize_features,
+                target_column=target_column_val, encoding_method=encoding_method_val
+            )
+            
+            # Store processed data in session state
+            st.session_state.X = X
+            st.session_state.y = y
+            st.session_state.feature_names = feature_names
+            st.session_state.scaler = scaler
+            st.session_state.selected_features_persistent = selected_features
+            st.session_state.target_column_persistent = target_column_val
+            st.session_state.encoding_method_persistent = encoding_method_val
+            st.session_state.df_transformed = df_transformed
+            
+            # Show preprocessing results
+            st.markdown("**Preprocessing Results:**")
+            display_preprocessing_results(before_count, after_count, len(selected_features), selected_features)
+            
+            # Sample transformed data with target highlighted
+            st.markdown(f"**🎯 Target Variable: `{target_column_val}`**")
+            df_transformed_display = df_transformed.copy()
+            if target_column_val in df_transformed_display.columns:
+                df_transformed_display = df_transformed_display.rename(columns={target_column_val: f"🎯 {target_column_val}"})
+            st.dataframe(df_transformed_display.head(10), use_container_width=True)
+            
+            # Interactive Exploration on transformed data
+            st.markdown("**Data Exploration:**")
+            
+            # Get available numeric features for exploration
+            numeric_features = [col for col in df_transformed.columns if col != target_column_val]
+            
+            if numeric_features:
+                # Initialize temp key
+                if "_exploration_feature_right" not in st.session_state:
+                    st.session_state["_exploration_feature_right"] = st.session_state.get("exploration_feature_right", numeric_features[0])
+                
+                # Validate
+                if st.session_state["_exploration_feature_right"] not in numeric_features:
+                    st.session_state["_exploration_feature_right"] = numeric_features[0]
+                
+                exploration_feature_right = st.selectbox(
+                    "Explore Feature:",
+                    numeric_features,
+                    index=numeric_features.index(st.session_state["_exploration_feature_right"]),
+                    key="_exploration_feature_right",
+                    on_change=save_to_state,
+                    args=("_exploration_feature_right", "exploration_feature_right")
+                )
+                
+                # Distribution plot
+                fig = px.histogram(df_transformed, x=exploration_feature_right, 
+                                 title=f'Distribution of {exploration_feature_right}',
+                                 color_discrete_sequence=['purple'])
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Target correlation plot
+                if target_column_val in df_transformed.columns:
+                    fig = px.scatter(df_transformed, x=exploration_feature_right, y=target_column_val,
+                                   title=f'{exploration_feature_right} vs {target_column_val}',
+                                   color_discrete_sequence=['green'])
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                st.info(f"💡 This shows the transformed/encoded data ready for ML models!")
+            else:
+                st.info("No features selected for transformation.")
+        else:
+            st.info("⚠️ Please select features in the configuration section above to see transformed data.")

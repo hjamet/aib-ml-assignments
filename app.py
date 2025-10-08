@@ -19,6 +19,10 @@ warnings.filterwarnings('ignore')
 def initialize_session_state():
     """Initialize session_state with default values for all widgets."""
     # Preprocessing page defaults
+    if "target_column" not in st.session_state:
+        st.session_state.target_column = "survived"
+    if "encoding_method" not in st.session_state:
+        st.session_state.encoding_method = "Drop Columns"
     if "exploration_feature" not in st.session_state:
         st.session_state.exploration_feature = "sex"
     if "missing_age_option" not in st.session_state:
