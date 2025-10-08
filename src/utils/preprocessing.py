@@ -166,7 +166,35 @@ def preprocess_data(df, selected_features, missing_age_option, normalize,
     
     # Feature mapping
     feature_mapping = get_feature_mapping()
-    feature_names = [feature_mapping[f] for f in selected_features]
+    
+    # Build feature_names list based on encoding method
+    feature_names = []
+    for f in selected_features:
+        mapped_col = feature_mapping[f]
+        
+        # For One-Hot Encoding, replace encoded columns with all one-hot columns
+        if encoding_method == 'One-Hot Encoding':
+            # Check if this is a categorical feature that was one-hot encoded
+            if mapped_col == 'sex_encoded':
+                # Find all sex_* columns (excluding sex_encoded)
+                sex_cols = [col for col in processed_df.columns if col.startswith('sex_') and col != 'sex_encoded']
+                if sex_cols:
+                    feature_names.extend(sex_cols)
+                else:
+                    feature_names.append(mapped_col)
+            elif mapped_col == 'embarked_encoded':
+                # Find all embarked_* columns (excluding embarked_encoded)
+                embarked_cols = [col for col in processed_df.columns if col.startswith('embarked_') and col != 'embarked_encoded']
+                if embarked_cols:
+                    feature_names.extend(embarked_cols)
+                else:
+                    feature_names.append(mapped_col)
+            else:
+                feature_names.append(mapped_col)
+        else:
+            # For Label Encoding and Drop Columns, use the mapped column directly
+            feature_names.append(mapped_col)
+    
     X = processed_df[feature_names].copy()
     
     # Drop rows with missing values
