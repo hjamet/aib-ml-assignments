@@ -216,11 +216,11 @@ def create_train_metrics_chart(results_df, problem_type, selected_metrics=None):
             yaxis=dict(range=[0, 1])
         )
     else:  # Regression
-        # Metric configuration for regression
+        # Metric configuration for regression - all metrics on same axis
         metric_config = {
-            'R²': {'column': 'Train R²', 'color': 'lightblue', 'yaxis': 'y'},
-            'RMSE': {'column': 'Train RMSE', 'color': 'lightcoral', 'yaxis': 'y2'},
-            'MAE': {'column': 'Train MAE', 'color': 'lightgreen', 'yaxis': 'y2'}
+            'R²': {'column': 'Train R²', 'color': 'lightblue'},
+            'RMSE': {'column': 'Train RMSE', 'color': 'lightcoral'},
+            'MAE': {'column': 'Train MAE', 'color': 'lightgreen'}
         }
         
         # Filter metrics if selected_metrics is provided
@@ -229,44 +229,24 @@ def create_train_metrics_chart(results_df, problem_type, selected_metrics=None):
         else:
             metrics_to_show = list(metric_config.keys())
         
-        # Check if we need dual axes
-        has_r2 = 'R²' in metrics_to_show
-        has_errors = any(m in ['RMSE', 'MAE'] for m in metrics_to_show)
-        
         # Add traces for selected metrics
         for metric in metrics_to_show:
             config = metric_config[metric]
-            trace_params = {
-                'name': metric,
-                'x': models,
-                'y': results_df[config['column']],
-                'marker_color': config['color']
-            }
-            
-            # Only add yaxis parameter if we have both types of metrics
-            if has_r2 and has_errors and config['yaxis'] == 'y2':
-                trace_params['yaxis'] = 'y2'
-            
-            fig.add_trace(go.Bar(**trace_params))
+            fig.add_trace(go.Bar(
+                name=metric,
+                x=models,
+                y=results_df[config['column']],
+                marker_color=config['color']
+            ))
         
         # Configure layout
-        layout_params = {
-            'title': 'Training Set Performance',
-            'xaxis_title': 'Model',
-            'barmode': 'group',
-            'height': 400
-        }
-        
-        # Add appropriate y-axis labels
-        if has_r2 and has_errors:
-            layout_params['yaxis_title'] = 'R² Score'
-            layout_params['yaxis2'] = dict(title='Error Metrics', overlaying='y', side='right')
-        elif has_r2:
-            layout_params['yaxis_title'] = 'R² Score'
-        else:
-            layout_params['yaxis_title'] = 'Error Metrics'
-        
-        fig.update_layout(**layout_params)
+        fig.update_layout(
+            title='Training Set Performance',
+            xaxis_title='Model',
+            yaxis_title='Score',
+            barmode='group',
+            height=400
+        )
     
     return fig
 
@@ -310,11 +290,11 @@ def create_test_metrics_chart(results_df, problem_type, selected_metrics=None):
             yaxis=dict(range=[0, 1])
         )
     else:  # Regression
-        # Metric configuration for regression
+        # Metric configuration for regression - all metrics on same axis
         metric_config = {
-            'R²': {'column': 'Test R²', 'color': 'lightblue', 'yaxis': 'y'},
-            'RMSE': {'column': 'Test RMSE', 'color': 'lightcoral', 'yaxis': 'y2'},
-            'MAE': {'column': 'Test MAE', 'color': 'lightgreen', 'yaxis': 'y2'}
+            'R²': {'column': 'Test R²', 'color': 'lightblue'},
+            'RMSE': {'column': 'Test RMSE', 'color': 'lightcoral'},
+            'MAE': {'column': 'Test MAE', 'color': 'lightgreen'}
         }
         
         # Filter metrics if selected_metrics is provided
@@ -323,44 +303,24 @@ def create_test_metrics_chart(results_df, problem_type, selected_metrics=None):
         else:
             metrics_to_show = list(metric_config.keys())
         
-        # Check if we need dual axes
-        has_r2 = 'R²' in metrics_to_show
-        has_errors = any(m in ['RMSE', 'MAE'] for m in metrics_to_show)
-        
         # Add traces for selected metrics
         for metric in metrics_to_show:
             config = metric_config[metric]
-            trace_params = {
-                'name': metric,
-                'x': models,
-                'y': results_df[config['column']],
-                'marker_color': config['color']
-            }
-            
-            # Only add yaxis parameter if we have both types of metrics
-            if has_r2 and has_errors and config['yaxis'] == 'y2':
-                trace_params['yaxis'] = 'y2'
-            
-            fig.add_trace(go.Bar(**trace_params))
+            fig.add_trace(go.Bar(
+                name=metric,
+                x=models,
+                y=results_df[config['column']],
+                marker_color=config['color']
+            ))
         
         # Configure layout
-        layout_params = {
-            'title': 'Test Set Performance',
-            'xaxis_title': 'Model',
-            'barmode': 'group',
-            'height': 400
-        }
-        
-        # Add appropriate y-axis labels
-        if has_r2 and has_errors:
-            layout_params['yaxis_title'] = 'R² Score'
-            layout_params['yaxis2'] = dict(title='Error Metrics', overlaying='y', side='right')
-        elif has_r2:
-            layout_params['yaxis_title'] = 'R² Score'
-        else:
-            layout_params['yaxis_title'] = 'Error Metrics'
-        
-        fig.update_layout(**layout_params)
+        fig.update_layout(
+            title='Test Set Performance',
+            xaxis_title='Model',
+            yaxis_title='Score',
+            barmode='group',
+            height=400
+        )
     
     return fig
 
