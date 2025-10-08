@@ -143,11 +143,11 @@ def display_metrics_table(results_df, problem_type, selected_metrics):
     # Display tables
     with col_train:
         st.markdown("**Train Set Performance**")
-        st.dataframe(train_df, use_container_width=True, hide_index=True)
+        st.dataframe(train_df, width='stretch', hide_index=True)
     
     with col_test:
         st.markdown("**Test Set Performance**")
-        st.dataframe(test_df, use_container_width=True, hide_index=True)
+        st.dataframe(test_df, width='stretch', hide_index=True)
 
 
 def display_model_metrics_columns(result, problem_type):
@@ -378,7 +378,7 @@ def display_prediction_result(prediction, probability, y, problem_type, target_c
                        color='Probability',
                        color_continuous_scale='RdYlGn')
             fig.update_yaxes(range=[0, 1])
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             # Multi-class classification
             # Find the index of the predicted class in the unique_classes list
@@ -407,7 +407,7 @@ def display_prediction_result(prediction, probability, y, problem_type, target_c
                        color='Probability',
                        color_continuous_scale='RdYlGn')
             fig.update_yaxes(range=[0, 1])
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
     else:  # Regression
         target_label = target_column.title() if target_column else "Value"
         st.success(f"🎯 **Predicted {target_label}: {prediction:.2f}**")
@@ -432,7 +432,7 @@ def display_prediction_result(prediction, probability, y, problem_type, target_c
         fig.add_vline(x=y_mean, line_dash="dot", line_color="blue",
                      annotation_text=f"Average: {y_mean:.2f}")
         fig.update_layout(title=f"Your {target_label} Prediction vs Dataset Distribution")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
 
 def inject_card_styles():

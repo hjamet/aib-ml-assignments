@@ -100,7 +100,7 @@ def home_page():
     
     # Show sample data
     if st.checkbox("📋 Show Sample Data", value=True, key="home_show_sample"):
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width='stretch')
     
     # Learning Summary
     toc_markdown('<h2 class="section-header">🎓 What You\'ll Learn</h2>', level=1, unsafe_allow_html=True)

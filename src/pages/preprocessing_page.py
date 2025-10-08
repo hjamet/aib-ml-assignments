@@ -160,7 +160,7 @@ def render_preprocessing_page(df):
         df_display = df.copy()
         target_col = st.session_state.target_column
         df_display = df_display.rename(columns={target_col: f"🎯 {target_col}"})
-        st.dataframe(df_display.head(10), use_container_width=True)
+        st.dataframe(df_display.head(10), width='stretch')
         
         # Interactive Exploration
         st.markdown("**Data Exploration:**")
@@ -197,12 +197,12 @@ def render_preprocessing_page(df):
             fig = px.histogram(df, x=exploration_feature_left, 
                              title=f'Distribution of {exploration_feature_left.title()}',
                              color_discrete_sequence=['skyblue'])
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             fig = px.histogram(df, x=exploration_feature_left, 
                              title=f'Distribution of {exploration_feature_left.title()}',
                              color_discrete_sequence=['lightgreen'])
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Survival rate plot (if survived column exists)
         if 'survived' in df.columns:
@@ -211,7 +211,7 @@ def render_preprocessing_page(df):
                         title=f'Survival Rate by {exploration_feature_left.title()}',
                         color_discrete_sequence=['orange'])
             fig.update_yaxes(title='Survival Rate')
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Insights
         insights = {
@@ -262,7 +262,7 @@ def render_preprocessing_page(df):
             df_transformed_display = df_transformed.copy()
             if target_column_val in df_transformed_display.columns:
                 df_transformed_display = df_transformed_display.rename(columns={target_column_val: f"🎯 {target_column_val}"})
-            st.dataframe(df_transformed_display.head(10), use_container_width=True)
+            st.dataframe(df_transformed_display.head(10), width='stretch')
             
             # Interactive Exploration on transformed data
             st.markdown("**Data Exploration:**")
@@ -319,7 +319,7 @@ def render_preprocessing_page(df):
                 fig = px.histogram(df_transformed, x=exploration_feature_right, 
                                  title=f'Distribution of {exploration_feature_right}',
                                  color_discrete_sequence=['purple'])
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 
                 # Target correlation plot - Bar chart showing target rate by feature
                 if target_column_val in df_transformed.columns:
@@ -328,7 +328,7 @@ def render_preprocessing_page(df):
                                 title=f'{target_column_val.title()} Rate by {exploration_feature_right}',
                                 color_discrete_sequence=['orange'])
                     fig.update_yaxes(title=f'{target_column_val.title()} Rate')
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width='stretch')
                 
                 # Insights for transformed features (same as original)
                 # Match by feature name pattern to handle encoded columns

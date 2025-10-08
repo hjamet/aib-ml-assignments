@@ -140,11 +140,11 @@ def render_classification_page():
         
         with col_train:
             fig_train = create_train_metrics_chart(results_df, "Classification", selected_metrics)
-            st.plotly_chart(fig_train, use_container_width=True)
+            st.plotly_chart(fig_train, width='stretch')
         
         with col_test:
             fig_test = create_test_metrics_chart(results_df, "Classification", selected_metrics)
-            st.plotly_chart(fig_test, use_container_width=True)
+            st.plotly_chart(fig_test, width='stretch')
         
         # Model Exploration - Allow student to select any trained model
         toc_subheader("🔍 Model Exploration")
@@ -196,7 +196,7 @@ def render_classification_page():
         
         with col_train:
             fig_train = create_confusion_matrix_train_plot(cm_train, class_labels=display_labels)
-            st.plotly_chart(fig_train, use_container_width=True)
+            st.plotly_chart(fig_train, width='stretch')
             
             # Only show detailed metrics for binary classification
             if cm_train.shape[0] == 2:
@@ -220,7 +220,7 @@ def render_classification_page():
         
         with col_test:
             fig_test = create_confusion_matrix_plot(cm_test, class_labels=display_labels)
-            st.plotly_chart(fig_test, use_container_width=True)
+            st.plotly_chart(fig_test, width='stretch')
             
             # Only show detailed metrics for binary classification
             if cm_test.shape[0] == 2:
@@ -293,11 +293,11 @@ def render_classification_page():
             if len(feature_names) == 2:
                 st.info(f"🎯 **Perfect!** With exactly 2 features, you can see how {selected_model_name} creates decision boundaries!")
                 fig = create_decision_boundary_plot(X_train, y_train, selected_model, feature_x, feature_y, selected_model_name)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info(f"💡 **Decision Boundary for {selected_model_name}**: The colored regions show where the model predicts each class. Points show actual data.")
             else:
                 fig = create_2d_scatter_plot(X_test, y_test, y_pred_selected, feature_x, feature_y, "Classification", "Survived")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info(f"💡 **2D Feature Plot for {selected_model_name}**: Each point is a passenger. Colors show actual vs predicted classes. Look for patterns!")
         
         # Feature Importance
@@ -305,7 +305,7 @@ def render_classification_page():
             toc_subsubheader(f"🎯 Feature Importance - {selected_model_name}")
             
             fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important for predicting survival.")
         
@@ -315,7 +315,7 @@ def render_classification_page():
             # Handle both 1D and 2D coefficient arrays
             coef = selected_model.coef_[0] if len(selected_model.coef_.shape) > 1 else selected_model.coef_
             fig = create_feature_coefficients_plot(feature_names, coef, selected_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions. Positive values increase survival probability, negative values decrease it.")
         
