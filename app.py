@@ -5,6 +5,9 @@ Main entry point for the Streamlit application.
 
 import streamlit as st
 import warnings
+import numpy as np
+import random
+import os
 
 from src.utils.config import setup_page_config, apply_css_styles
 from src.utils.data_loader import load_titanic_data
@@ -14,6 +17,18 @@ from src.pages.regression_page import render_regression_page
 from src.pages.classification_page import render_classification_page
 
 warnings.filterwarnings('ignore')
+
+
+def set_global_seed(seed=42):
+    """
+    Set global random seed for reproducibility across all libraries.
+    
+    Args:
+        seed (int): Random seed value
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 def initialize_session_state():
@@ -105,6 +120,9 @@ def preprocessing_page_wrapper():
 
 def main():
     """Main application function."""
+    # Set global seed for reproducibility
+    set_global_seed(42)
+    
     # Setup page configuration
     setup_page_config()
     
