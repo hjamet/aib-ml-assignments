@@ -16,13 +16,36 @@ from src.pages.classification_page import render_classification_page
 warnings.filterwarnings('ignore')
 
 
-def main():
-    """Main application function."""
-    # Setup page configuration
-    setup_page_config()
+def initialize_session_state():
+    """Initialize session_state with default values for all widgets."""
+    # Preprocessing page defaults
+    if "exploration_feature" not in st.session_state:
+        st.session_state.exploration_feature = "sex"
+    if "missing_age_option" not in st.session_state:
+        st.session_state.missing_age_option = "Fill with median"
+    if "normalize_features" not in st.session_state:
+        st.session_state.normalize_features = True
+    if "selected_features" not in st.session_state:
+        st.session_state.selected_features = ["Age", "Sex", "Passenger Class", "Fare"]
+    if "test_size" not in st.session_state:
+        st.session_state.test_size = 20
     
-    # Apply CSS styles
-    apply_css_styles()
+    # Regression page defaults
+    if "regression_models" not in st.session_state:
+        st.session_state.regression_models = ["Linear Regression", "Random Forest", "Ridge Regression"]
+    
+    # Classification page defaults
+    if "classification_models" not in st.session_state:
+        st.session_state.classification_models = ["Random Forest", "Logistic Regression", "Support Vector Machine"]
+
+
+def home_page():
+    """Home page with dataset overview."""
+    # Load data
+    df = load_titanic_data()
+    
+    # Store in session state for other pages
+    st.session_state.df = df
     
     # Header
     st.markdown('<h1 class="main-header">🤖 Machine Learning Adventure: Interactive Demo</h1>', unsafe_allow_html=True)
@@ -36,39 +59,20 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # Load data
-    df = load_titanic_data()
-    
     # Dataset overview
     st.markdown('<h2 class="section-header">📊 Dataset Overview</h2>', unsafe_allow_html=True)
     display_dataset_overview(df)
     
     # Show sample data
-    if st.checkbox("📋 Show Sample Data", value=True):
-        st.dataframe(df.head(10), width='stretch')
-    
-    # Sidebar navigation
-    st.sidebar.markdown("# 🧭 Navigation")
-    page = st.sidebar.radio(
-        "Choisir une page:",
-        ["📊 Preprocessing & Exploration", "📈 Régression", "🎯 Classification"],
-        key="navigation_page"
-    )
-    
-    # Render selected page
-    if page == "📊 Preprocessing & Exploration":
-        render_preprocessing_page(df)
-    elif page == "📈 Régression":
-        render_regression_page()
-    elif page == "🎯 Classification":
-        render_classification_page()
+    if st.checkbox("📋 Show Sample Data", value=True, key="home_show_sample"):
+        st.dataframe(df.head(10), use_container_width=True)
     
     # Learning Summary
-    st.markdown('<h2 class="section-header">🎓 What You\'ve Learned</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-header">🎓 What You\'ll Learn</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="success-box">
-        <h3>🌟 Congratulations! You've mastered key ML concepts:</h3>
+        <h3>🌟 Master key ML concepts:</h3>
         <ul>
             <li><strong>Data Exploration:</strong> Understanding patterns in real-world data</li>
             <li><strong>Data Preprocessing:</strong> Preparing data for machine learning algorithms</li>
@@ -83,6 +87,35 @@ def main():
         weather prediction, and much more!
     </div>
     """, unsafe_allow_html=True)
+
+
+def preprocessing_page_wrapper():
+    """Wrapper for preprocessing page."""
+    df = st.session_state.get('df', load_titanic_data())
+    render_preprocessing_page(df)
+
+
+def main():
+    """Main application function."""
+    # Setup page configuration
+    setup_page_config()
+    
+    # Apply CSS styles
+    apply_css_styles()
+    
+    # Initialize session state
+    initialize_session_state()
+    
+    # Create navigation with st.Page
+    pg = st.navigation([
+        st.Page(home_page, title="Home", icon="🏠", default=True),
+        st.Page(preprocessing_page_wrapper, title="Preprocessing & Exploration", icon="📊"),
+        st.Page(render_regression_page, title="Regression", icon="📈"),
+        st.Page(render_classification_page, title="Classification", icon="🎯"),
+    ])
+    
+    # Run the selected page
+    pg.run()
 
 
 if __name__ == "__main__":

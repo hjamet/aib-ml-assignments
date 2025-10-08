@@ -46,7 +46,7 @@ def render_regression_page():
     selected_models = st.multiselect(
         "Choose Regression Models:",
         list(available_models.keys()),
-        default=["Linear Regression", "Random Forest", "Ridge Regression"],
+        default=st.session_state.get("regression_models", ["Linear Regression", "Random Forest", "Ridge Regression"]),
         help="Select multiple models to compare their performance",
         key="regression_models"
     )
@@ -131,10 +131,26 @@ def render_regression_page():
             
             col1, col2 = st.columns(2)
             with col1:
-                feature_x = st.selectbox("Choose X-axis feature:", feature_names, key="reg_2d_x")
+                default_x = st.session_state.get("reg_2d_x", feature_names[0])
+                if default_x not in feature_names:
+                    default_x = feature_names[0]
+                feature_x = st.selectbox(
+                    "Choose X-axis feature:",
+                    feature_names,
+                    index=feature_names.index(default_x),
+                    key="reg_2d_x"
+                )
             with col2:
-                feature_y = st.selectbox("Choose Y-axis feature:", 
-                                       [f for f in feature_names if f != feature_x], key="reg_2d_y")
+                available_y = [f for f in feature_names if f != feature_x]
+                default_y = st.session_state.get("reg_2d_y", available_y[0] if available_y else feature_names[0])
+                if default_y not in available_y:
+                    default_y = available_y[0] if available_y else feature_names[0]
+                feature_y = st.selectbox(
+                    "Choose Y-axis feature:",
+                    available_y,
+                    index=available_y.index(default_y) if default_y in available_y else 0,
+                    key="reg_2d_y"
+                )
             
             if len(feature_names) == 2:
                 fig = create_regression_surface_plot(X_train, y_train, best_model, feature_x, feature_y, best_model_name, "Survived")

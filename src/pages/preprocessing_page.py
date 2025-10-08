@@ -18,16 +18,20 @@ def render_preprocessing_page(df):
     """
     st.markdown('<h2 class="section-header">🔍 Interactive Data Exploration</h2>', unsafe_allow_html=True)
     
+    feature_options = ["sex", "pclass", "age", "fare", "embarked"]
+    feature_labels = {
+        "sex": "👥 Gender", 
+        "pclass": "🎫 Passenger Class",
+        "age": "👶 Age",
+        "fare": "💰 Fare",
+        "embarked": "🚢 Port of Embarkation"
+    }
+    
     exploration_feature = st.selectbox(
         "🔍 Explore Feature:",
-        ["sex", "pclass", "age", "fare", "embarked"],
-        format_func=lambda x: {
-            "sex": "👥 Gender", 
-            "pclass": "🎫 Passenger Class",
-            "age": "👶 Age",
-            "fare": "💰 Fare",
-            "embarked": "🚢 Port of Embarkation"
-        }[x],
+        feature_options,
+        index=feature_options.index(st.session_state.get("exploration_feature", "sex")),
+        format_func=lambda x: feature_labels[x],
         key="exploration_feature"
     )
     
@@ -67,22 +71,35 @@ def render_preprocessing_page(df):
     st.markdown('<h2 class="section-header">🔧 Data Preprocessing</h2>', unsafe_allow_html=True)
     
     # Preprocessing controls
+    missing_age_options = ["Fill with median", "Fill with mean", "Drop rows"]
     st.selectbox(
         "Handle Missing Ages:",
-        ["Fill with median", "Fill with mean", "Drop rows"],
+        missing_age_options,
+        index=missing_age_options.index(st.session_state.get("missing_age_option", "Fill with median")),
         key="missing_age_option"
     )
     
-    st.checkbox("📏 Normalize Features", value=True, key="normalize_features")
+    st.checkbox(
+        "📏 Normalize Features",
+        value=st.session_state.get("normalize_features", True),
+        key="normalize_features"
+    )
     
+    feature_options = ["Age", "Sex", "Passenger Class", "Fare", "Siblings/Spouses", "Parents/Children", "Port of Embarkation"]
     st.multiselect(
         "📊 Select Features:",
-        ["Age", "Sex", "Passenger Class", "Fare", "Siblings/Spouses", "Parents/Children", "Port of Embarkation"],
-        default=["Age", "Sex", "Passenger Class", "Fare"],
+        feature_options,
+        default=st.session_state.get("selected_features", ["Age", "Sex", "Passenger Class", "Fare"]),
         key="selected_features"
     )
     
-    st.slider("Test Set Size (%)", 10, 40, 20, 5, key="test_size")
+    st.slider(
+        "Test Set Size (%)",
+        10, 40,
+        value=st.session_state.get("test_size", 20),
+        step=5,
+        key="test_size"
+    )
     
     if st.session_state.selected_features:
         # Get values from session_state (set by widgets)

@@ -45,7 +45,7 @@ def render_classification_page():
     selected_models = st.multiselect(
         "Choose Classification Models:",
         list(available_models.keys()),
-        default=["Random Forest", "Logistic Regression", "Support Vector Machine"],
+        default=st.session_state.get("classification_models", ["Random Forest", "Logistic Regression", "Support Vector Machine"]),
         help="Select multiple models to compare their performance",
         key="classification_models"
     )
@@ -117,10 +117,26 @@ def render_classification_page():
             
             col1, col2 = st.columns(2)
             with col1:
-                feature_x = st.selectbox("Choose X-axis feature:", feature_names, key="clf_2d_x")
+                default_x = st.session_state.get("clf_2d_x", feature_names[0])
+                if default_x not in feature_names:
+                    default_x = feature_names[0]
+                feature_x = st.selectbox(
+                    "Choose X-axis feature:",
+                    feature_names,
+                    index=feature_names.index(default_x),
+                    key="clf_2d_x"
+                )
             with col2:
-                feature_y = st.selectbox("Choose Y-axis feature:", 
-                                       [f for f in feature_names if f != feature_x], key="clf_2d_y")
+                available_y = [f for f in feature_names if f != feature_x]
+                default_y = st.session_state.get("clf_2d_y", available_y[0] if available_y else feature_names[0])
+                if default_y not in available_y:
+                    default_y = available_y[0] if available_y else feature_names[0]
+                feature_y = st.selectbox(
+                    "Choose Y-axis feature:",
+                    available_y,
+                    index=available_y.index(default_y) if default_y in available_y else 0,
+                    key="clf_2d_y"
+                )
             
             if len(feature_names) == 2:
                 st.info("🎯 **Perfect!** With exactly 2 features, you can see how the classifier creates decision boundaries!")
