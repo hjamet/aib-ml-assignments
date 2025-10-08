@@ -11,12 +11,12 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from ..utils.model_factory import get_available_models
 from ..utils.model_training import train_models
 from ..utils.visualization import (
-    create_comparison_chart, create_regression_surface_plot,
-    create_2d_scatter_plot, create_feature_importance_plot,
-    create_feature_coefficients_plot
+    create_train_metrics_chart, create_test_metrics_chart,
+    create_regression_surface_plot, create_2d_scatter_plot, 
+    create_feature_importance_plot, create_feature_coefficients_plot
 )
 from ..utils.ui_components import (
-    display_metrics_row, render_hyperparameter_controls,
+    display_model_metrics_columns, render_hyperparameter_controls,
     render_prediction_inputs, display_prediction_result
 )
 
@@ -85,16 +85,24 @@ def render_regression_page():
         
         st.subheader("📊 Model Performance Comparison")
         
-        # Metrics display
+        # Metrics display for each model
         for result in results:
-            display_metrics_row(result, "Regression")
+            display_model_metrics_columns(result, "Regression")
         
-        # Comparison chart
-        fig = create_comparison_chart(results_df, "Regression")
-        st.plotly_chart(fig, use_container_width=True)
+        # Comparison charts in two columns
+        st.markdown("### 📈 Performance Metrics Comparison")
+        col_train, col_test = st.columns(2)
         
-        # Best model
-        best_model_name = results_df.loc[results_df['Test Score'].idxmax(), 'Model']
+        with col_train:
+            fig_train = create_train_metrics_chart(results_df, "Regression")
+            st.plotly_chart(fig_train, use_container_width=True)
+        
+        with col_test:
+            fig_test = create_test_metrics_chart(results_df, "Regression")
+            st.plotly_chart(fig_test, use_container_width=True)
+        
+        # Best model based on test R²
+        best_model_name = results_df.loc[results_df['Test R²'].idxmax(), 'Model']
         best_model = models[best_model_name]
         y_pred_best = best_model.predict(X_test)
         

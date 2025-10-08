@@ -177,51 +177,101 @@ def create_2d_scatter_plot(X_test, y_test, y_pred, feature_x, feature_y, problem
     return fig
 
 
-def create_comparison_chart(results_df, problem_type):
-    """Create a comparison chart for model performance"""
-    metric_name = results_df.iloc[0]['Metric']
+def create_train_metrics_chart(results_df, problem_type):
+    """Create a bar chart showing training set metrics for all models"""
+    if problem_type == "Classification":
+        # Create grouped bar chart for classification metrics
+        models = results_df['Model'].tolist()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name='Accuracy', x=models, y=results_df['Train Accuracy'], marker_color='lightblue'))
+        fig.add_trace(go.Bar(name='Precision', x=models, y=results_df['Train Precision'], marker_color='lightgreen'))
+        fig.add_trace(go.Bar(name='Recall', x=models, y=results_df['Train Recall'], marker_color='lightsalmon'))
+        fig.add_trace(go.Bar(name='F1-Score', x=models, y=results_df['Train F1'], marker_color='lightcoral'))
+        
+        fig.update_layout(
+            title='Training Set Performance',
+            xaxis_title='Model',
+            yaxis_title='Score',
+            barmode='group',
+            height=400,
+            yaxis=dict(range=[0, 1])
+        )
+    else:  # Regression
+        models = results_df['Model'].tolist()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name='R² Score', x=models, y=results_df['Train R²'], marker_color='lightblue'))
+        fig.add_trace(go.Bar(name='RMSE', x=models, y=results_df['Train RMSE'], marker_color='lightcoral', yaxis='y2'))
+        fig.add_trace(go.Bar(name='MAE', x=models, y=results_df['Train MAE'], marker_color='lightgreen', yaxis='y2'))
+        
+        fig.update_layout(
+            title='Training Set Performance',
+            xaxis_title='Model',
+            yaxis_title='R² Score',
+            yaxis2=dict(title='Error Metrics', overlaying='y', side='right'),
+            barmode='group',
+            height=400
+        )
     
-    fig = make_subplots(
-        rows=1, cols=2,
-        subplot_titles=[f'{metric_name} Comparison', 'Overfitting Analysis'],
-        specs=[[{"secondary_y": False}, {"secondary_y": False}]]
-    )
-    
-    # Score comparison
-    fig.add_trace(
-        go.Bar(name=f'Training {metric_name}', x=results_df['Model'], y=results_df['Training Score'],
-              marker_color='lightblue'),
-        row=1, col=1
-    )
-    fig.add_trace(
-        go.Bar(name=f'Test {metric_name}', x=results_df['Model'], y=results_df['Test Score'],
-              marker_color='lightcoral'),
-        row=1, col=1
-    )
-    
-    # Overfitting analysis
-    threshold = 0.05 if problem_type == "Classification" else 0.1
-    colors = ['red' if x > threshold else 'orange' if x > threshold/2 else 'green' for x in results_df['Overfitting']]
-    fig.add_trace(
-        go.Bar(name='Overfitting Score', x=results_df['Model'], y=results_df['Overfitting'],
-              marker_color=colors, showlegend=False),
-        row=1, col=2
-    )
-    
-    fig.update_layout(height=400, showlegend=True)
     return fig
 
 
-def create_confusion_matrix_plot(cm):
+def create_test_metrics_chart(results_df, problem_type):
+    """Create a bar chart showing test set metrics for all models"""
+    if problem_type == "Classification":
+        # Create grouped bar chart for classification metrics
+        models = results_df['Model'].tolist()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name='Accuracy', x=models, y=results_df['Test Accuracy'], marker_color='lightblue'))
+        fig.add_trace(go.Bar(name='Precision', x=models, y=results_df['Test Precision'], marker_color='lightgreen'))
+        fig.add_trace(go.Bar(name='Recall', x=models, y=results_df['Test Recall'], marker_color='lightsalmon'))
+        fig.add_trace(go.Bar(name='F1-Score', x=models, y=results_df['Test F1'], marker_color='lightcoral'))
+        
+        fig.update_layout(
+            title='Test Set Performance',
+            xaxis_title='Model',
+            yaxis_title='Score',
+            barmode='group',
+            height=400,
+            yaxis=dict(range=[0, 1])
+        )
+    else:  # Regression
+        models = results_df['Model'].tolist()
+        
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name='R² Score', x=models, y=results_df['Test R²'], marker_color='lightblue'))
+        fig.add_trace(go.Bar(name='RMSE', x=models, y=results_df['Test RMSE'], marker_color='lightcoral', yaxis='y2'))
+        fig.add_trace(go.Bar(name='MAE', x=models, y=results_df['Test MAE'], marker_color='lightgreen', yaxis='y2'))
+        
+        fig.update_layout(
+            title='Test Set Performance',
+            xaxis_title='Model',
+            yaxis_title='R² Score',
+            yaxis2=dict(title='Error Metrics', overlaying='y', side='right'),
+            barmode='group',
+            height=400
+        )
+    
+    return fig
+
+
+def create_confusion_matrix_plot(cm, title="Confusion Matrix - Test Set"):
     """Create a heatmap for the confusion matrix"""
     fig = px.imshow(cm, 
                    labels=dict(x="Predicted", y="Actual", color="Count"),
                    x=['Did not survive', 'Survived'],
                    y=['Did not survive', 'Survived'],
                    color_continuous_scale='Blues',
-                   title="Confusion Matrix")
+                   title=title)
     fig.update_traces(text=cm, texttemplate="%{text}")
     return fig
+
+
+def create_confusion_matrix_train_plot(cm):
+    """Create a heatmap for the confusion matrix on training set"""
+    return create_confusion_matrix_plot(cm, title="Confusion Matrix - Train Set")
 
 
 def create_feature_importance_plot(feature_names, importances, model_name):

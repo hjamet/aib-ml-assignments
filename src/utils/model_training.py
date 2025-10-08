@@ -6,7 +6,7 @@ Handles model training and evaluation.
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score,
+    accuracy_score, precision_score, recall_score, f1_score,
     mean_squared_error, r2_score, mean_absolute_error
 )
 
@@ -25,22 +25,32 @@ def evaluate_classification_model(model, X_train, y_train, X_test, y_test):
         y_test: Test labels
         
     Returns:
-        dict: Dictionary containing evaluation metrics
+        dict: Dictionary containing evaluation metrics for train and test sets
     """
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
     
-    train_score = accuracy_score(y_train, train_pred)
-    test_score = accuracy_score(y_test, test_pred)
-    precision = precision_score(y_test, test_pred, average='weighted', zero_division=0)
-    recall = recall_score(y_test, test_pred, average='weighted', zero_division=0)
+    # Train metrics
+    train_accuracy = accuracy_score(y_train, train_pred)
+    train_precision = precision_score(y_train, train_pred, average='weighted', zero_division=0)
+    train_recall = recall_score(y_train, train_pred, average='weighted', zero_division=0)
+    train_f1 = f1_score(y_train, train_pred, average='weighted', zero_division=0)
+    
+    # Test metrics
+    test_accuracy = accuracy_score(y_test, test_pred)
+    test_precision = precision_score(y_test, test_pred, average='weighted', zero_division=0)
+    test_recall = recall_score(y_test, test_pred, average='weighted', zero_division=0)
+    test_f1 = f1_score(y_test, test_pred, average='weighted', zero_division=0)
     
     return {
-        'Training Score': train_score,
-        'Test Score': test_score,
-        'Precision': precision,
-        'Recall': recall,
-        'Overfitting': train_score - test_score,
+        'Train Accuracy': train_accuracy,
+        'Train Precision': train_precision,
+        'Train Recall': train_recall,
+        'Train F1': train_f1,
+        'Test Accuracy': test_accuracy,
+        'Test Precision': test_precision,
+        'Test Recall': test_recall,
+        'Test F1': test_f1,
         'Metric': 'Accuracy'
     }
 
@@ -57,24 +67,30 @@ def evaluate_regression_model(model, X_train, y_train, X_test, y_test):
         y_test: Test labels
         
     Returns:
-        dict: Dictionary containing evaluation metrics
+        dict: Dictionary containing evaluation metrics for train and test sets
     """
     train_pred = model.predict(X_train)
     test_pred = model.predict(X_test)
     
-    train_score = r2_score(y_train, train_pred)
-    test_score = r2_score(y_test, test_pred)
-    mse = mean_squared_error(y_test, test_pred)
-    mae = mean_absolute_error(y_test, test_pred)
-    rmse = np.sqrt(mse)
+    # Train metrics
+    train_r2 = r2_score(y_train, train_pred)
+    train_mse = mean_squared_error(y_train, train_pred)
+    train_rmse = np.sqrt(train_mse)
+    train_mae = mean_absolute_error(y_train, train_pred)
+    
+    # Test metrics
+    test_r2 = r2_score(y_test, test_pred)
+    test_mse = mean_squared_error(y_test, test_pred)
+    test_rmse = np.sqrt(test_mse)
+    test_mae = mean_absolute_error(y_test, test_pred)
     
     return {
-        'Training Score': train_score,
-        'Test Score': test_score,
-        'MSE': mse,
-        'MAE': mae,
-        'RMSE': rmse,
-        'Overfitting': train_score - test_score,
+        'Train R²': train_r2,
+        'Train RMSE': train_rmse,
+        'Train MAE': train_mae,
+        'Test R²': test_r2,
+        'Test RMSE': test_rmse,
+        'Test MAE': test_mae,
         'Metric': 'R² Score'
     }
 
@@ -96,9 +112,19 @@ def train_models(X, y, selected_models, hyperparams, test_size, problem_type):
     """
     # Split data
     if problem_type == "Classification":
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=test_size/100, random_state=42, stratify=y
-        )
+        # Check if stratified split is possible
+        unique, counts = np.unique(y, return_counts=True)
+        min_class_count = counts.min()
+        can_stratify = min_class_count >= 2
+        
+        if can_stratify:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size/100, random_state=42, stratify=y
+            )
+        else:
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=test_size/100, random_state=42
+            )
     else:
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=test_size/100, random_state=42

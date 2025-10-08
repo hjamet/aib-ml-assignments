@@ -37,30 +37,41 @@ def display_preprocessing_results(before_count, after_count, n_features, feature
     st.success(f"✅ Data preprocessing completed! Using {n_features} features: {', '.join(feature_list)}")
 
 
-def display_metrics_row(result, problem_type):
-    """Display a row of metrics for a single model."""
+def display_model_metrics_columns(result, problem_type):
+    """Display metrics for a single model in two columns: Train Set and Test Set."""
+    st.markdown(f"#### {result['Model']}")
+    
+    col_train, col_test = st.columns(2)
+    
     if problem_type == "Classification":
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric(f"{result['Model']} - Accuracy", f"{result['Test Score']:.1%}")
-        with col2:
-            st.metric("Precision", f"{result['Precision']:.1%}")
-        with col3:
-            st.metric("Recall", f"{result['Recall']:.1%}")
-        with col4:
-            overfitting_status = "⚠️" if result['Overfitting'] > 0.05 else "✅"
-            st.metric("Overfitting", f"{overfitting_status} {result['Overfitting']:.1%}")
+        with col_train:
+            st.markdown("**Train Set**")
+            st.metric("Accuracy", f"{result['Train Accuracy']:.1%}")
+            st.metric("Precision", f"{result['Train Precision']:.1%}")
+            st.metric("Recall", f"{result['Train Recall']:.1%}")
+            st.metric("F1-Score", f"{result['Train F1']:.1%}")
+        
+        with col_test:
+            st.markdown("**Test Set**")
+            st.metric("Accuracy", f"{result['Test Accuracy']:.1%}")
+            st.metric("Precision", f"{result['Test Precision']:.1%}")
+            st.metric("Recall", f"{result['Test Recall']:.1%}")
+            st.metric("F1-Score", f"{result['Test F1']:.1%}")
+    
     else:  # Regression
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric(f"{result['Model']} - R²", f"{result['Test Score']:.3f}")
-        with col2:
-            st.metric("RMSE", f"{result['RMSE']:.2f}")
-        with col3:
-            st.metric("MAE", f"{result['MAE']:.2f}")
-        with col4:
-            overfitting_status = "⚠️" if result['Overfitting'] > 0.1 else "✅"
-            st.metric("Overfitting", f"{overfitting_status} {result['Overfitting']:.3f}")
+        with col_train:
+            st.markdown("**Train Set**")
+            st.metric("R² Score", f"{result['Train R²']:.3f}")
+            st.metric("RMSE", f"{result['Train RMSE']:.2f}")
+            st.metric("MAE", f"{result['Train MAE']:.2f}")
+        
+        with col_test:
+            st.markdown("**Test Set**")
+            st.metric("R² Score", f"{result['Test R²']:.3f}")
+            st.metric("RMSE", f"{result['Test RMSE']:.2f}")
+            st.metric("MAE", f"{result['Test MAE']:.2f}")
+    
+    st.markdown("---")
 
 
 def render_hyperparameter_controls(model_name, problem_type, key_prefix):

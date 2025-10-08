@@ -10,12 +10,13 @@ from sklearn.metrics import confusion_matrix
 from ..utils.model_factory import get_available_models
 from ..utils.model_training import train_models
 from ..utils.visualization import (
-    create_comparison_chart, create_decision_boundary_plot,
-    create_2d_scatter_plot, create_confusion_matrix_plot,
+    create_train_metrics_chart, create_test_metrics_chart,
+    create_decision_boundary_plot, create_2d_scatter_plot, 
+    create_confusion_matrix_plot, create_confusion_matrix_train_plot,
     create_feature_importance_plot, create_feature_coefficients_plot
 )
 from ..utils.ui_components import (
-    display_metrics_row, render_hyperparameter_controls,
+    display_model_metrics_columns, render_hyperparameter_controls,
     render_prediction_inputs, display_prediction_result
 )
 
@@ -84,42 +85,70 @@ def render_classification_page():
         
         st.subheader("📊 Model Performance Comparison")
         
-        # Metrics display
+        # Metrics display for each model
         for result in results:
-            display_metrics_row(result, "Classification")
+            display_model_metrics_columns(result, "Classification")
         
-        # Comparison chart
-        fig = create_comparison_chart(results_df, "Classification")
-        st.plotly_chart(fig, use_container_width=True)
+        # Comparison charts in two columns
+        st.markdown("### 📈 Performance Metrics Comparison")
+        col_train, col_test = st.columns(2)
         
-        # Best model
-        best_model_name = results_df.loc[results_df['Test Score'].idxmax(), 'Model']
+        with col_train:
+            fig_train = create_train_metrics_chart(results_df, "Classification")
+            st.plotly_chart(fig_train, use_container_width=True)
+        
+        with col_test:
+            fig_test = create_test_metrics_chart(results_df, "Classification")
+            st.plotly_chart(fig_test, use_container_width=True)
+        
+        # Best model based on test accuracy
+        best_model_name = results_df.loc[results_df['Test Accuracy'].idxmax(), 'Model']
         best_model = models[best_model_name]
         y_pred_best = best_model.predict(X_test)
         
         st.subheader(f"🏆 Best Model: {best_model_name}")
         
-        # Confusion Matrix
-        cm = confusion_matrix(y_test, y_pred_best)
+        # Confusion Matrices - Train and Test
+        st.markdown("### 🔍 Confusion Matrices")
         
-        col1, col2 = st.columns(2)
+        y_pred_train = best_model.predict(X_train)
+        cm_train = confusion_matrix(y_train, y_pred_train)
+        cm_test = confusion_matrix(y_test, y_pred_best)
         
-        with col1:
-            fig = create_confusion_matrix_plot(cm)
-            st.plotly_chart(fig, use_container_width=True)
+        col_train, col_test = st.columns(2)
         
-        with col2:
-            tn, fp, fn, tp = cm.ravel()
-            total = tn + fp + fn + tp
+        with col_train:
+            fig_train = create_confusion_matrix_train_plot(cm_train)
+            st.plotly_chart(fig_train, use_container_width=True)
             
-            st.markdown("#### 🔍 Confusion Matrix Explained:")
+            tn_train, fp_train, fn_train, tp_train = cm_train.ravel()
+            total_train = tn_train + fp_train + fn_train + tp_train
+            
+            st.markdown("#### 📊 Train Set Metrics:")
             st.markdown(f"""
-            - **True Negatives (TN):** {tn} - Correctly predicted 'did not survive'
-            - **False Positives (FP):** {fp} - Wrongly predicted 'survived' 
-            - **False Negatives (FN):** {fn} - Wrongly predicted 'did not survive'
-            - **True Positives (TP):** {tp} - Correctly predicted 'survived'
+            - **True Negatives:** {tn_train}
+            - **False Positives:** {fp_train}
+            - **False Negatives:** {fn_train}
+            - **True Positives:** {tp_train}
             
-            **Overall Accuracy:** {(tp+tn)/total:.1%}
+            **Accuracy:** {(tp_train+tn_train)/total_train:.1%}
+            """)
+        
+        with col_test:
+            fig_test = create_confusion_matrix_plot(cm_test)
+            st.plotly_chart(fig_test, use_container_width=True)
+            
+            tn_test, fp_test, fn_test, tp_test = cm_test.ravel()
+            total_test = tn_test + fp_test + fn_test + tp_test
+            
+            st.markdown("#### 📊 Test Set Metrics:")
+            st.markdown(f"""
+            - **True Negatives:** {tn_test}
+            - **False Positives:** {fp_test}
+            - **False Negatives:** {fn_test}
+            - **True Positives:** {tp_test}
+            
+            **Accuracy:** {(tp_test+tn_test)/total_test:.1%}
             """)
         
         # 2D Visualization
