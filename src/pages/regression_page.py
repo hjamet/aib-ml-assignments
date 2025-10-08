@@ -49,6 +49,17 @@ def render_regression_page():
     normalize_features = st.session_state.get('normalize_features', True)
     selected_features = st.session_state.get('selected_features_persistent', [])
     
+    # Check if target variable is categorical (10 or fewer unique values)
+    n_unique = y.nunique()
+    if n_unique <= 10:
+        target_name = st.session_state.get('target_column_persistent', 'target')
+        st.warning(f"⚠️ **This page is currently disabled for categorical target variables.**\n\n"
+                   f"You are trying to predict `{target_name}`, which is a categorical variable with {n_unique} unique values.\n\n"
+                   f"While it is possible to train a regression model on a classification task, "
+                   f"this often leads to poor performance and interpretability.\n\n"
+                   f"**Please use the Classification page instead.**")
+        st.stop()
+    
     toc_markdown('<h2 class="section-header">🤖 Regression Models Training & Comparison</h2>', level=1, unsafe_allow_html=True)
     
     # Model selection in page

@@ -151,8 +151,8 @@ def main():
     pg = st.navigation([
         st.Page(home_page, title="Home", icon="🏠", default=True),
         st.Page(preprocessing_page_wrapper, title="Preprocessing & Exploration", icon="📊"),
-        st.Page(render_regression_page, title="Regression", icon="📈"),
         st.Page(render_classification_page, title="Classification", icon="🎯"),
+        st.Page(render_regression_page, title="Regression", icon="📈"),
     ])
     
     # Run the selected page

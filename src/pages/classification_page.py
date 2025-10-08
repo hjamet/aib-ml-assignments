@@ -49,6 +49,15 @@ def render_classification_page():
     normalize_features = st.session_state.get('normalize_features', True)
     selected_features = st.session_state.get('selected_features_persistent', [])
     
+    # Check if target variable is continuous (more than 10 unique values)
+    n_unique = y.nunique()
+    if n_unique > 10:
+        target_name = st.session_state.get('target_column_persistent', 'target')
+        st.error(f"⚠️ **This page cannot be used when working with continuous labels.**\n\n"
+                 f"You are trying to predict `{target_name}`, which has {n_unique} unique values and appears to be a continuous variable.\n\n"
+                 f"**Please use the Regression page instead**, as the Classification page is designed for categorical target variables.")
+        st.stop()
+    
     toc_markdown('<h2 class="section-header">🤖 Classification Models Training & Comparison</h2>', level=1, unsafe_allow_html=True)
     
     # Model selection in page
