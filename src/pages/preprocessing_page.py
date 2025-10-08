@@ -237,7 +237,7 @@ def render_preprocessing_page(df):
             encoding_method_val = st.session_state.encoding_method
             
             # Preprocess data
-            X, y, feature_names, scaler, before_count, after_count, df_transformed = preprocess_data(
+            X, y, feature_names, scaler, before_count, after_count, df_transformed, encoders = preprocess_data(
                 df, selected_features, missing_age_option, normalize_features,
                 target_column=target_column_val, encoding_method=encoding_method_val
             )
@@ -251,6 +251,7 @@ def render_preprocessing_page(df):
             st.session_state.target_column_persistent = target_column_val
             st.session_state.encoding_method_persistent = encoding_method_val
             st.session_state.df_transformed = df_transformed
+            st.session_state.encoders = encoders
             
             # Show preprocessing results
             st.markdown("**Preprocessing Results:**")

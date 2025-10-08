@@ -327,7 +327,7 @@ def render_prediction_inputs(selected_features, key_prefix):
     return prediction_inputs
 
 
-def display_prediction_result(prediction, probability, y, problem_type):
+def display_prediction_result(prediction, probability, y, problem_type, target_column=None, df_original=None, encoders=None):
     """
     Display prediction results.
     
@@ -336,31 +336,42 @@ def display_prediction_result(prediction, probability, y, problem_type):
         probability: Prediction probabilities (for classification)
         y: The target series (for context)
         problem_type (str): Either "Classification" or "Regression"
+        target_column (str): Name of the target column being predicted
+        df_original (pd.DataFrame): Original dataframe before encoding
+        encoders (dict): Dictionary of encoding mappings for decoding values
     """
     if problem_type == "Classification":
         # Get unique classes from y
         unique_classes = sorted(y.unique())
         n_classes = len(unique_classes)
         
-        # Check if binary classification with survived target
-        if n_classes == 2 and set(unique_classes) == {0, 1}:
-            # Binary classification with survived/not survived
+        # Decode prediction if encoders are available
+        decoded_prediction = prediction
+        if encoders and target_column and target_column in encoders:
+            decoded_prediction = encoders[target_column].get(prediction, prediction)
+        
+        # Binary classification
+        if n_classes == 2:
+            # Decode both classes if encoders are available
+            class_0_decoded = encoders[target_column].get(0, "Class 0") if encoders and target_column and target_column in encoders else "Class 0"
+            class_1_decoded = encoders[target_column].get(1, "Class 1") if encoders and target_column and target_column in encoders else "Class 1"
+            
             if prediction == 1:
-                st.success(f"🎉 **SURVIVAL PREDICTED!**")
+                st.success(f"🎉 **PREDICTED: {class_1_decoded}**")
                 st.success(f"Confidence: {probability[1]:.1%}")
             else:
-                st.error(f"💔 **Did not survive**")
+                st.error(f"💔 **PREDICTED: {class_0_decoded}**")
                 st.error(f"Confidence: {probability[0]:.1%}")
             
             # Show probability breakdown
             import pandas as pd
             prob_df = pd.DataFrame({
-                'Outcome': ['Did not survive', 'Survived'],
+                'Outcome': [class_0_decoded, class_1_decoded],
                 'Probability': probability
             })
             
             fig = px.bar(prob_df, x='Outcome', y='Probability', 
-                       title='Prediction Confidence',
+                       title=f'Prediction Confidence - {target_column.title() if target_column else "Target"}',
                        color='Probability',
                        color_continuous_scale='RdYlGn')
             fig.update_yaxes(range=[0, 1])
@@ -369,24 +380,34 @@ def display_prediction_result(prediction, probability, y, problem_type):
             # Multi-class classification
             # Find the index of the predicted class in the unique_classes list
             pred_idx = unique_classes.index(prediction) if prediction in unique_classes else 0
-            st.success(f"🎯 **PREDICTED CLASS: {prediction}**")
+            st.success(f"🎯 **PREDICTED: {decoded_prediction}**")
             st.success(f"Confidence: {probability[pred_idx]:.1%}")
             
             # Show probability breakdown for all classes
             import pandas as pd
+            # Decode all classes if encoders are available
+            class_labels = []
+            for cls in unique_classes:
+                if encoders and target_column and target_column in encoders:
+                    decoded_class = encoders[target_column].get(cls, str(cls))
+                    class_labels.append(str(decoded_class))
+                else:
+                    class_labels.append(str(cls))
+            
             prob_df = pd.DataFrame({
-                'Class': [str(cls) for cls in unique_classes],
+                'Class': class_labels,
                 'Probability': probability
             })
             
             fig = px.bar(prob_df, x='Class', y='Probability', 
-                       title='Prediction Confidence by Class',
+                       title=f'Prediction Confidence by Class - {target_column.title() if target_column else "Target"}',
                        color='Probability',
                        color_continuous_scale='RdYlGn')
             fig.update_yaxes(range=[0, 1])
             st.plotly_chart(fig, use_container_width=True)
     else:  # Regression
-        st.success(f"🎯 **Predicted Value: {prediction:.2f}**")
+        target_label = target_column.title() if target_column else "Value"
+        st.success(f"🎯 **Predicted {target_label}: {prediction:.2f}**")
         
         # Show prediction context
         y_min, y_max = y.min(), y.max()
@@ -394,7 +415,7 @@ def display_prediction_result(prediction, probability, y, problem_type):
         
         st.info(f"""
         **📊 Prediction Context:**
-        - **Predicted Value:** {prediction:.2f}
+        - **Predicted {target_label}:** {prediction:.2f}
         - **Dataset Range:** {y_min:.2f} to {y_max:.2f}  
         - **Dataset Average:** {y_mean:.2f}
         - **Prediction vs Average:** {((prediction - y_mean) / y_mean * 100):+.1f}%
@@ -407,7 +428,7 @@ def display_prediction_result(prediction, probability, y, problem_type):
                      annotation_text=f"Prediction: {prediction:.2f}")
         fig.add_vline(x=y_mean, line_dash="dot", line_color="blue",
                      annotation_text=f"Average: {y_mean:.2f}")
-        fig.update_layout(title="Your Prediction vs Dataset Distribution")
+        fig.update_layout(title=f"Your {target_label} Prediction vs Dataset Distribution")
         st.plotly_chart(fig, use_container_width=True)
 
 

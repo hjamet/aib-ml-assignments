@@ -340,7 +340,11 @@ def render_classification_page():
         with col2:
             st.subheader("🎯 Prediction Result")
             
-            if selected_features and st.button("🔮 Predict Survival", type="primary", key="clf_predict_btn"):
+            # Dynamic button text based on target column
+            target_column = st.session_state.get("target_column_persistent", "survived")
+            button_text = f"🔮 Predict {target_column.title()}"
+            
+            if selected_features and st.button(button_text, type="primary", key="clf_predict_btn"):
                 input_data = []
                 for feature_name in feature_names:
                     if feature_name in prediction_inputs:
@@ -356,7 +360,12 @@ def render_classification_page():
                 prediction = selected_model.predict(input_array)[0]
                 probability = selected_model.predict_proba(input_array)[0]
                 
-                display_prediction_result(prediction, probability, y, "Classification")
+                # Get additional parameters for dynamic prediction display
+                df_original = st.session_state.get("df")
+                encoders = st.session_state.get("encoders")
+                
+                display_prediction_result(prediction, probability, y, "Classification", 
+                                        target_column, df_original, encoders)
     
     # Render TOC at the end
     render_toc()

@@ -47,6 +47,19 @@ def get_reverse_feature_mapping():
     return reverse_map
 
 
+def get_encoding_mappings():
+    """
+    Get the mappings for decoding encoded categorical features.
+    
+    Returns:
+        dict: Dictionary containing decoding mappings for each encoded feature
+    """
+    return {
+        'sex_encoded': {0: 'Female', 1: 'Male'},
+        'embarked_encoded': {0: 'Southampton', 1: 'Cherbourg', 2: 'Queenstown'}
+    }
+
+
 def get_categorical_feature_names():
     """
     Get the list of user-friendly feature names that are categorical.
@@ -151,7 +164,7 @@ def preprocess_data(df, selected_features, missing_age_option, normalize,
         encoding_method (str): Method for encoding categorical features
         
     Returns:
-        tuple: (X, y, feature_names, scaler, before_count, after_count, df_transformed)
+        tuple: (X, y, feature_names, scaler, before_count, after_count, df_transformed, encoders)
     """
     processed_df = df.copy()
     
@@ -204,10 +217,22 @@ def preprocess_data(df, selected_features, missing_age_option, normalize,
     # Extract target variable
     y = processed_df.loc[X.index, target_column]
     
-    # If target is categorical, encode it
+    # Create encoders dictionary for decoding predictions
+    encoders = {}
+    
+    # Get base encoding mappings
+    base_mappings = get_encoding_mappings()
+    encoders.update(base_mappings)
+    
+    # If target is categorical, encode it and create mapping
     if pd.api.types.is_categorical_dtype(y) or y.dtype == 'object':
         le = LabelEncoder()
-        y = pd.Series(le.fit_transform(y), index=y.index, name=target_column)
+        y_encoded = le.fit_transform(y)
+        y = pd.Series(y_encoded, index=y.index, name=target_column)
+        
+        # Create target mapping for decoding
+        target_mapping = {i: val for i, val in enumerate(le.classes_)}
+        encoders[target_column] = target_mapping
     
     after_count = len(X)
     
@@ -222,5 +247,5 @@ def preprocess_data(df, selected_features, missing_age_option, normalize,
     df_transformed = X.copy()
     df_transformed[target_column] = y
     
-    return X, y, feature_names, scaler, before_count, after_count, df_transformed
+    return X, y, feature_names, scaler, before_count, after_count, df_transformed, encoders
 
