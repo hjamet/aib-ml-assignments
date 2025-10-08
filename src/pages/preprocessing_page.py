@@ -38,11 +38,11 @@ def render_preprocessing_page(df):
         if exploration_feature in ['age', 'fare']:
             fig = px.histogram(df, x=exploration_feature, title=f'Distribution of {exploration_feature.title()}',
                              color_discrete_sequence=['skyblue'])
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         else:
             fig = px.histogram(df, x=exploration_feature, title=f'Distribution of {exploration_feature.title()}',
                              color_discrete_sequence=['lightgreen'])
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         survival_by_feature = df.groupby(exploration_feature)['survived'].mean().reset_index()
@@ -50,7 +50,7 @@ def render_preprocessing_page(df):
                     title=f'Survival Rate by {exploration_feature.title()}',
                     color_discrete_sequence=['orange'])
         fig.update_yaxes(title='Survival Rate')
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, use_container_width=True)
     
     # Insights
     insights = {
@@ -100,6 +100,7 @@ def render_preprocessing_page(df):
         st.session_state.y = y
         st.session_state.feature_names = feature_names
         st.session_state.scaler = scaler
+        st.session_state.selected_features_persistent = selected_features
         
         # Show preprocessing results
         display_preprocessing_results(before_count, after_count, len(selected_features), selected_features)
