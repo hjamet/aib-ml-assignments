@@ -6,7 +6,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-from ..utils.preprocessing import preprocess_data, get_feature_mapping
+from ..utils.preprocessing import preprocess_data, get_feature_mapping, get_reverse_feature_mapping
 from ..utils.ui_components import display_preprocessing_results, display_dataset_overview
 
 
@@ -92,12 +92,15 @@ def render_preprocessing_page(df):
     )
     
     # Feature selection - exclude target column
-    feature_options = ["Age", "Sex", "Passenger Class", "Fare", "Siblings/Spouses", "Parents/Children", "Port of Embarkation"]
+    feature_options = ["Age", "Sex", "Passenger Class", "Fare", "Siblings/Spouses", "Parents/Children", "Port of Embarkation", "Survived"]
     feature_mapping = get_feature_mapping()
+    reverse_feature_mapping = get_reverse_feature_mapping()
     
     # Exclure la target des features sélectionnables
+    # Check if the target_column corresponds to any feature in feature_options
+    target_feature_name = reverse_feature_mapping.get(st.session_state.target_column)
     available_features = [f for f in feature_options 
-                         if feature_mapping.get(f) != st.session_state.target_column]
+                         if f != target_feature_name and feature_mapping.get(f) != st.session_state.target_column]
     
     # Validate selected features
     valid_selected = [f for f in st.session_state["_selected_features"] if f in available_features]
@@ -253,6 +256,32 @@ def render_preprocessing_page(df):
             numeric_features = [col for col in df_transformed.columns if col != target_column_val]
             
             if numeric_features:
+                # Create feature labels with emojis for transformed features
+                transformed_feature_labels = {}
+                for feature in numeric_features:
+                    feature_lower = feature.lower()
+                    # Map transformed column names to emoji labels
+                    if 'age' in feature_lower:
+                        transformed_feature_labels[feature] = f"👶 {feature.replace('_', ' ').title()}"
+                    elif 'sex' in feature_lower:
+                        transformed_feature_labels[feature] = f"👥 {feature.replace('_', ' ').title()}"
+                    elif 'pclass' in feature_lower or 'class' in feature_lower:
+                        transformed_feature_labels[feature] = f"🎫 {feature.replace('_', ' ').title()}"
+                    elif 'fare' in feature_lower:
+                        transformed_feature_labels[feature] = f"💰 {feature.replace('_', ' ').title()}"
+                    elif 'sibsp' in feature_lower:
+                        transformed_feature_labels[feature] = f"👨‍👩‍👧 {feature.replace('_', ' ').title()}"
+                    elif 'parch' in feature_lower:
+                        transformed_feature_labels[feature] = f"👨‍👩‍👦 {feature.replace('_', ' ').title()}"
+                    elif 'embarked' in feature_lower:
+                        transformed_feature_labels[feature] = f"🚢 {feature.replace('_', ' ').title()}"
+                    elif 'deck' in feature_lower:
+                        transformed_feature_labels[feature] = f"🏢 {feature.replace('_', ' ').title()}"
+                    elif 'alone' in feature_lower:
+                        transformed_feature_labels[feature] = f"🧍 {feature.replace('_', ' ').title()}"
+                    else:
+                        transformed_feature_labels[feature] = feature.replace('_', ' ').title()
+                
                 # Initialize temp key
                 if "_exploration_feature_right" not in st.session_state:
                     st.session_state["_exploration_feature_right"] = st.session_state.get("exploration_feature_right", numeric_features[0])
@@ -265,6 +294,7 @@ def render_preprocessing_page(df):
                     "Explore Feature:",
                     numeric_features,
                     index=numeric_features.index(st.session_state["_exploration_feature_right"]),
+                    format_func=lambda x: transformed_feature_labels.get(x, x),
                     key="_exploration_feature_right",
                     on_change=save_to_state,
                     args=("_exploration_feature_right", "exploration_feature_right")
@@ -283,7 +313,32 @@ def render_preprocessing_page(df):
                                    color_discrete_sequence=['green'])
                     st.plotly_chart(fig, use_container_width=True)
                 
-                st.info(f"💡 This shows the transformed/encoded data ready for ML models!")
+                # Insights for transformed features (same as original)
+                # Match by feature name pattern to handle encoded columns
+                feature_lower = exploration_feature_right.lower()
+                
+                if 'sex' in feature_lower:
+                    insight_msg = "👩‍👩‍👧‍👦 Women had much higher survival rates than men ('Women and children first!')"
+                elif 'pclass' in feature_lower or 'class' in feature_lower:
+                    insight_msg = "🥇 First-class passengers had better survival chances than lower classes"
+                elif 'age' in feature_lower:
+                    insight_msg = "👶 Children and young adults generally had better survival chances"
+                elif 'fare' in feature_lower:
+                    insight_msg = "💎 Passengers who paid higher fares (likely in better cabins) survived more often"
+                elif 'embarked' in feature_lower:
+                    insight_msg = "🚢 The port of embarkation might indicate passenger class or cabin location"
+                elif 'sibsp' in feature_lower:
+                    insight_msg = "👨‍👩‍👧 Number of siblings/spouses aboard affects survival patterns"
+                elif 'parch' in feature_lower:
+                    insight_msg = "👨‍👩‍👦 Number of parents/children aboard can indicate family groups"
+                elif 'deck' in feature_lower:
+                    insight_msg = "🏢 Deck location often correlates with passenger class and proximity to lifeboats"
+                elif 'alone' in feature_lower:
+                    insight_msg = "🧍 Traveling alone or with family significantly affected survival chances"
+                else:
+                    insight_msg = "Explore patterns in this transformed feature!"
+                
+                st.info(f"💡 **Insight:** {insight_msg}")
             else:
                 st.info("No features selected for transformation.")
         else:

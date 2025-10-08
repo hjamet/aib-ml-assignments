@@ -21,8 +21,30 @@ def get_feature_mapping():
         'Fare': 'fare',
         'Siblings/Spouses': 'sibsp',
         'Parents/Children': 'parch',
-        'Port of Embarkation': 'embarked_encoded'
+        'Port of Embarkation': 'embarked_encoded',
+        'Survived': 'survived'
     }
+
+
+def get_reverse_feature_mapping():
+    """
+    Get the reverse mapping from dataframe column names to user-friendly feature names.
+    Handles multiple possible column names that could map to the same feature.
+    
+    Returns:
+        dict: Mapping of column names to display names
+    """
+    reverse_map = {}
+    feature_mapping = get_feature_mapping()
+    
+    for feature_name, column_name in feature_mapping.items():
+        reverse_map[column_name] = feature_name
+    
+    # Add additional mappings for raw column names that might be used as target
+    reverse_map['sex'] = 'Sex'
+    reverse_map['embarked'] = 'Port of Embarkation'
+    
+    return reverse_map
 
 
 def get_categorical_columns(df):
