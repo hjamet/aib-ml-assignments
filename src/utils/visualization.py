@@ -16,7 +16,7 @@ def create_decision_boundary_plot(X_train, y_train, model, feature_x, feature_y,
     X_2d = X_train[[feature_x, feature_y]]
     
     # Create a mesh grid
-    h = 0.02  # step size in the mesh
+    h = 0.05  # step size in the mesh (optimized for performance with many concurrent users)
     x_min, x_max = X_2d[feature_x].min() - 1, X_2d[feature_x].max() + 1
     y_min, y_max = X_2d[feature_y].min() - 1, X_2d[feature_y].max() + 1
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
@@ -68,12 +68,12 @@ def create_regression_surface_plot(X_train, y_train, model, feature_x, feature_y
     # Get the two features
     X_2d = X_train[[feature_x, feature_y]]
     
-    # Create a mesh grid
+    # Create a mesh grid (optimized resolution for performance)
     x_min, x_max = X_2d[feature_x].min(), X_2d[feature_x].max()
     y_min, y_max = X_2d[feature_y].min(), X_2d[feature_y].max()
     xx, yy = np.meshgrid(
-        np.linspace(x_min, x_max, 50),
-        np.linspace(y_min, y_max, 50)
+        np.linspace(x_min, x_max, 30),
+        np.linspace(y_min, y_max, 30)
     )
     
     # Make predictions on the mesh grid

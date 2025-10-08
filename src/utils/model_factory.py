@@ -14,6 +14,8 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
+from .config import MAX_JOBS_HEAVY, MAX_JOBS_LIGHT
+
 
 def get_available_models(problem_type):
     """
@@ -175,6 +177,7 @@ def create_model(model_name, problem_type, hyperparams):
                 max_depth=params.get('max_depth', 10),
                 min_samples_split=params.get('min_samples_split', 2),
                 min_samples_leaf=params.get('min_samples_leaf', 1),
+                n_jobs=MAX_JOBS_HEAVY,
                 random_state=42
             )
         elif model_name == "Support Vector Machine":
@@ -243,6 +246,7 @@ def create_model(model_name, problem_type, hyperparams):
                 max_depth=params.get('max_depth', 10),
                 min_samples_split=params.get('min_samples_split', 2),
                 min_samples_leaf=params.get('min_samples_leaf', 1),
+                n_jobs=MAX_JOBS_HEAVY,
                 random_state=42
             )
         elif model_name == "Support Vector Regression":

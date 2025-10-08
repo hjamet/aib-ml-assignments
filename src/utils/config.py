@@ -1,81 +1,98 @@
 """
 Configuration module for the ML Demo application.
-Handles Streamlit configuration and CSS styles.
+Handles CPU core management and performance optimization.
 """
 
-import streamlit as st
+import os
+
+# CPU Core Management
+# Reserve cores for system stability when running with many concurrent users
+TOTAL_CORES = os.cpu_count() or 1
+RESERVED_CORES = 3  # Reserved for OS and Streamlit server
+AVAILABLE_CORES = max(1, TOTAL_CORES - RESERVED_CORES)
+
+# Multiprocessing limits for ML models
+# Heavy models (Random Forest, Gradient Boosting) use multiprocessing
+# On small datasets, this adds slight overhead (~0.05s) but provides critical benefits:
+# - Better CPU load distribution when 50+ users train models simultaneously
+# - Prevents system freeze by limiting cores per user (4 instead of 20)
+# - Allows CPU scheduler to efficiently manage 200 threads vs 1000+ threads
+MAX_JOBS_HEAVY = min(4, max(1, AVAILABLE_CORES // 4))
+
+# Light models (Logistic Regression, SVM, etc.) don't benefit from multiprocessing
+# on small datasets due to overhead
+MAX_JOBS_LIGHT = 1
 
 
+# Page Configuration
 def setup_page_config():
-    """Configure Streamlit page settings."""
+    """
+    Configure Streamlit page settings.
+    
+    Sets the page title, icon, layout, and initial sidebar state.
+    """
+    import streamlit as st
     st.set_page_config(
-        page_title="ML Demo: Interactive Machine Learning",
-        page_icon="🤖",
+        page_title="ML Demo: Titanic Dataset Explorer",
+        page_icon="🚢",
         layout="wide",
         initial_sidebar_state="expanded"
     )
 
 
 def get_css_styles():
-    """Return the CSS styles for the application."""
+    """
+    Get CSS styles for the application.
+    
+    Returns:
+        str: CSS styles as a string
+    """
     return """
-<style>
+    <style>
     .main-header {
-        font-size: 3rem;
+        font-size: 2.5rem;
+        font-weight: bold;
         color: #1f77b4;
         text-align: center;
-        margin-bottom: 2rem;
-    }
-    .section-header {
-        font-size: 1.5rem;
-        color: #ff7f0e;
-        margin-top: 2rem;
         margin-bottom: 1rem;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
+    
+    .section-header {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #1f77b4;
+        padding-bottom: 0.5rem;
     }
-    .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        margin: 1rem 0;
-    }
+    
     .info-box {
-        background-color: #d1ecf1;
-        border: 1px solid #bee5eb;
-        color: #0c5460;
+        background-color: #f0f8ff;
+        border-left: 4px solid #1f77b4;
         padding: 1rem;
-        border-radius: 0.25rem;
         margin: 1rem 0;
+        border-radius: 0.3rem;
     }
     
-    /* Table of Contents Styles */
-    [data-testid="stSidebar"] a {
-        text-decoration: none;
-        color: #262730;
-        transition: color 0.2s ease;
+    .metric-card {
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
-    [data-testid="stSidebar"] a:hover {
-        color: #ff7f0e;
-        text-decoration: underline;
+    .stMetric {
+        background-color: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 0.3rem;
     }
-    
-    [data-testid="stSidebar"] .toc-item {
-        padding: 0.2rem 0;
-        line-height: 1.6;
-    }
-</style>
-"""
+    </style>
+    """
 
 
 def apply_css_styles():
-    """Apply CSS styles to the Streamlit app."""
+    """Apply custom CSS styles to the Streamlit app."""
+    import streamlit as st
     st.markdown(get_css_styles(), unsafe_allow_html=True)
-

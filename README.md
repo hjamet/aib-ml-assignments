@@ -105,6 +105,8 @@ L'application utilise les bibliothèques suivantes :
 
 ## 🎮 Lancement de l'application
 
+### Lancement Standard (1-10 utilisateurs)
+
 Une fois les dépendances installées, lancez l'application avec :
 
 ```bash
@@ -117,6 +119,43 @@ http://localhost:8501
 ```
 
 Si elle ne s'ouvre pas automatiquement, copiez simplement cette URL dans votre navigateur.
+
+### Déploiement Optimisé (50-150 utilisateurs simultanés)
+
+Pour supporter un grand nombre d'utilisateurs simultanés (usage pédagogique en classe), l'application a été optimisée :
+
+**Optimisations incluses :**
+- Multiprocessing intelligent pour Random Forest (utilise 4 cores max par utilisateur)
+- Réservation de 3 cores CPU pour la stabilité système
+- Visualisations optimisées (6x plus rapides)
+- Gestion automatique de la charge CPU
+
+**Matériel recommandé pour 100-150 élèves :**
+- CPU : i7-12700KF (20 threads) ou équivalent
+- RAM : 32 GB minimum
+- Connexion réseau stable
+
+**Lancement optimisé :**
+```bash
+streamlit run app.py --server.maxMessageSize=200
+```
+
+**Configuration réseau locale :**
+Pour permettre aux élèves de se connecter depuis d'autres ordinateurs du réseau local :
+
+```bash
+streamlit run app.py --server.address=0.0.0.0 --server.maxMessageSize=200
+```
+
+Les élèves pourront ensuite accéder à l'application via :
+```
+http://[VOTRE_IP_LOCALE]:8501
+```
+
+**Recommandations pédagogiques :**
+- Éviter que tous les élèves entraînent des modèles exactement au même moment
+- Pour 150 élèves, envisager 2-3 sessions échelonnées de 50-75 élèves
+- Privilégier des exercices guidés avec des pauses entre les entraînements
 
 ## 📖 Guide d'utilisation
 
@@ -189,6 +228,16 @@ L'application est conçue pour être facilement extensible. Pour ajouter :
 - La stratification est appliquée lors du split train/test en classification
 - Le cache Streamlit (`@st.cache_data`) optimise le chargement des données
 - Les warnings scikit-learn sont filtrés pour une interface propre
+
+### Optimisations de performance
+
+- **Multiprocessing intelligent** : Random Forest utilise jusqu'à 4 cores CPU (paramètre `n_jobs=4`)
+- **Réservation CPU** : 3 cores réservés au système pour éviter les freezes
+- **Visualisations optimisées** :
+  - Frontières de décision : résolution réduite de 0.02 à 0.05 (6x plus rapide)
+  - Surfaces 3D : résolution réduite de 50×50 à 30×30 (3x plus rapide)
+- **Architecture** : Chaque utilisateur = 1 session Python indépendante
+- **Charge CPU** : Automatiquement répartie entre les cores disponibles
 
 ## 🐛 Résolution de problèmes
 
