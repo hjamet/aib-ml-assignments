@@ -79,7 +79,7 @@ def render_classification_page():
         
         # Comparison chart
         fig = create_comparison_chart(results_df, "Classification")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
         # Best model
         best_model_name = results_df.loc[results_df['Test Score'].idxmax(), 'Model']
@@ -95,7 +95,7 @@ def render_classification_page():
         
         with col1:
             fig = create_confusion_matrix_plot(cm)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         with col2:
             tn, fp, fn, tp = cm.ravel()
@@ -125,11 +125,11 @@ def render_classification_page():
             if len(feature_names) == 2:
                 st.info("🎯 **Perfect!** With exactly 2 features, you can see how the classifier creates decision boundaries!")
                 fig = create_decision_boundary_plot(X_train, y_train, best_model, feature_x, feature_y, best_model_name)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info("💡 **Decision Boundary**: The colored regions show where the model predicts each class. Points show actual data.")
             else:
                 fig = create_2d_scatter_plot(X_test, y_test, y_pred_best, feature_x, feature_y, "Classification", "Survived")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info("💡 **2D Feature Plot**: Each point is a passenger. Colors show actual vs predicted classes. Look for patterns!")
         
         # Feature Importance
@@ -137,7 +137,7 @@ def render_classification_page():
             st.subheader("🎯 Feature Importance")
             
             fig = create_feature_importance_plot(feature_names, best_model.feature_importances_, best_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Importance** shows which passenger characteristics the {best_model_name} considers most important for predicting survival.")
         
@@ -147,7 +147,7 @@ def render_classification_page():
             # Handle both 1D and 2D coefficient arrays
             coef = best_model.coef_[0] if len(best_model.coef_.shape) > 1 else best_model.coef_
             fig = create_feature_coefficients_plot(feature_names, coef, best_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Coefficients** show how much each feature influences the {best_model_name}'s predictions. Positive values increase survival probability, negative values decrease it.")
         
@@ -158,18 +158,21 @@ def render_classification_page():
         
         col1, col2 = st.columns(2)
         
+        # Initialize prediction_inputs before columns to avoid UnboundLocalError
+        prediction_inputs = {}
+        
         with col1:
             st.subheader("👤 Passenger Profile")
             
             if not selected_features:
-                st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                st.warning("⚠️ Please select features in the 'Preprocessing & Exploration' page first to make predictions.")
             else:
                 prediction_inputs = render_prediction_inputs(selected_features, "clf")
         
         with col2:
             st.subheader("🎯 Prediction Result")
             
-            if st.button("🔮 Predict Survival", type="primary", key="clf_predict_btn"):
+            if selected_features and st.button("🔮 Predict Survival", type="primary", key="clf_predict_btn"):
                 input_data = []
                 for feature_name in feature_names:
                     if feature_name in prediction_inputs:

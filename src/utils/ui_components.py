@@ -233,7 +233,7 @@ def display_prediction_result(prediction, probability, y, problem_type):
                    color='Probability',
                    color_continuous_scale='RdYlGn')
         fig.update_yaxes(range=[0, 1])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
     else:  # Regression
         st.success(f"🎯 **Predicted Value: {prediction:.2f}**")
         
@@ -257,5 +257,5 @@ def display_prediction_result(prediction, probability, y, problem_type):
         fig.add_vline(x=y_mean, line_dash="dot", line_color="blue",
                      annotation_text=f"Average: {y_mean:.2f}")
         fig.update_layout(title="Your Prediction vs Dataset Distribution")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 

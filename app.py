@@ -45,7 +45,7 @@ def main():
     
     # Show sample data
     if st.checkbox("📋 Show Sample Data", value=True):
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(df.head(10), width='stretch')
     
     # Sidebar navigation
     st.sidebar.markdown("# 🧭 Navigation")

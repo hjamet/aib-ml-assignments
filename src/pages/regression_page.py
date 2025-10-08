@@ -80,7 +80,7 @@ def render_regression_page():
         
         # Comparison chart
         fig = create_comparison_chart(results_df, "Regression")
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
         # Best model
         best_model_name = results_df.loc[results_df['Test Score'].idxmax(), 'Model']
@@ -102,7 +102,7 @@ def render_regression_page():
             min_val, max_val = min(y_test.min(), y_pred_best.min()), max(y_test.max(), y_pred_best.max())
             fig.add_shape(type="line", x0=min_val, y0=min_val, x1=max_val, y1=max_val,
                         line=dict(color="red", width=2, dash="dash"))
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         with col2:
             # Residuals plot
@@ -111,7 +111,7 @@ def render_regression_page():
                            title="Residuals Plot",
                            labels={'x': 'Predicted Values', 'y': 'Residuals'})
             fig.add_hline(y=0, line_dash="dash", line_color="red")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         
         # Metrics explanation
         mse = mean_squared_error(y_test, y_pred_best)
@@ -138,11 +138,11 @@ def render_regression_page():
             
             if len(feature_names) == 2:
                 fig = create_regression_surface_plot(X_train, y_train, best_model, feature_x, feature_y, best_model_name, "Survived")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info("💡 **Prediction Surface**: The colored surface shows the model's predictions across the feature space.")
             else:
                 fig = create_2d_scatter_plot(X_test, y_test, y_pred_best, feature_x, feature_y, "Regression", "Survived")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width='stretch')
                 st.info("💡 **2D Feature Plot**: Each point is a passenger. Color intensity shows the target value. Size shows prediction accuracy.")
         
         # Feature Importance
@@ -150,7 +150,7 @@ def render_regression_page():
             st.subheader("🎯 Feature Importance")
             
             fig = create_feature_importance_plot(feature_names, best_model.feature_importances_, best_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Importance** shows which passenger characteristics the {best_model_name} considers most important.")
         
@@ -158,7 +158,7 @@ def render_regression_page():
             st.subheader("🎯 Feature Coefficients")
             
             fig = create_feature_coefficients_plot(feature_names, best_model.coef_, best_model_name)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
             
             st.info(f"💡 **Feature Coefficients** show how much each feature influences the {best_model_name}'s predictions.")
         
@@ -169,18 +169,21 @@ def render_regression_page():
         
         col1, col2 = st.columns(2)
         
+        # Initialize prediction_inputs before columns to avoid UnboundLocalError
+        prediction_inputs = {}
+        
         with col1:
             st.subheader("👤 Passenger Profile")
             
             if not selected_features:
-                st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                st.warning("⚠️ Please select features in the 'Preprocessing & Exploration' page first to make predictions.")
             else:
                 prediction_inputs = render_prediction_inputs(selected_features, "reg")
         
         with col2:
             st.subheader("🎯 Prediction Result")
             
-            if st.button("🔮 Predict Value", type="primary", key="reg_predict_btn"):
+            if selected_features and st.button("🔮 Predict Value", type="primary", key="reg_predict_btn"):
                 input_data = []
                 for feature_name in feature_names:
                     if feature_name in prediction_inputs:
