@@ -781,30 +781,33 @@ def main():
             with col1:
                 st.subheader("👤 Passenger Profile")
                 
-                prediction_inputs = {}
-                
-                if 'Age' in selected_features:
-                    prediction_inputs['age'] = st.slider("Age", 0, 80, 30, key="reg_pred_age")
-                if 'Sex' in selected_features:
-                    sex_input = st.selectbox("Gender", ["Female", "Male"], key="reg_pred_sex")
-                    prediction_inputs['sex_encoded'] = 1 if sex_input == "Male" else 0
-                if 'Passenger Class' in selected_features:
-                    prediction_inputs['pclass'] = st.selectbox("Passenger Class", [1, 2, 3], index=1, key="reg_pred_pclass")
-                if 'Fare' in selected_features:
-                    prediction_inputs['fare'] = st.slider("Fare ($)", 0, 500, 50, key="reg_pred_fare")
-                if 'Siblings/Spouses' in selected_features:
-                    prediction_inputs['sibsp'] = st.slider("Siblings/Spouses Aboard", 0, 8, 0, key="reg_pred_sibsp")
-                if 'Parents/Children' in selected_features:
-                    prediction_inputs['parch'] = st.slider("Parents/Children Aboard", 0, 6, 0, key="reg_pred_parch")
-                if 'Port of Embarkation' in selected_features:
-                    port_input = st.selectbox("Port of Embarkation", ["Southampton", "Cherbourg", "Queenstown"], key="reg_pred_port")
-                    port_mapping = {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}
-                    prediction_inputs['embarked_encoded'] = port_mapping[port_input]
+                if not selected_features:
+                    st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                else:
+                    prediction_inputs = {}
+                    
+                    if 'Age' in selected_features:
+                        prediction_inputs['age'] = st.slider("Age", 0, 80, 30, key="reg_pred_age")
+                    if 'Sex' in selected_features:
+                        sex_input = st.selectbox("Gender", ["Female", "Male"], key="reg_pred_sex")
+                        prediction_inputs['sex_encoded'] = 1 if sex_input == "Male" else 0
+                    if 'Passenger Class' in selected_features:
+                        prediction_inputs['pclass'] = st.selectbox("Passenger Class", [1, 2, 3], index=1, key="reg_pred_pclass")
+                    if 'Fare' in selected_features:
+                        prediction_inputs['fare'] = st.slider("Fare ($)", 0, 500, 50, key="reg_pred_fare")
+                    if 'Siblings/Spouses' in selected_features:
+                        prediction_inputs['sibsp'] = st.slider("Siblings/Spouses Aboard", 0, 8, 0, key="reg_pred_sibsp")
+                    if 'Parents/Children' in selected_features:
+                        prediction_inputs['parch'] = st.slider("Parents/Children Aboard", 0, 6, 0, key="reg_pred_parch")
+                    if 'Port of Embarkation' in selected_features:
+                        port_input = st.selectbox("Port of Embarkation", ["Southampton", "Cherbourg", "Queenstown"], key="reg_pred_port")
+                        port_mapping = {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}
+                        prediction_inputs['embarked_encoded'] = port_mapping[port_input]
             
             with col2:
                 st.subheader("🎯 Prediction Result")
                 
-                if st.button("🔮 Predict Value", type="primary", key="reg_predict_btn"):
+                if selected_features and st.button("🔮 Predict Value", type="primary", key="reg_predict_btn"):
                     input_data = []
                     for feature_name in feature_names:
                         if feature_name in prediction_inputs:
@@ -1218,30 +1221,33 @@ def main():
             with col1:
                 st.subheader("👤 Passenger Profile")
                 
-                prediction_inputs = {}
-                
-                if 'Age' in selected_features:
-                    prediction_inputs['age'] = st.slider("Age", 0, 80, 30, key="clf_pred_age")
-                if 'Sex' in selected_features:
-                    sex_input = st.selectbox("Gender", ["Female", "Male"], key="clf_pred_sex")
-                    prediction_inputs['sex_encoded'] = 1 if sex_input == "Male" else 0
-                if 'Passenger Class' in selected_features:
-                    prediction_inputs['pclass'] = st.selectbox("Passenger Class", [1, 2, 3], index=1, key="clf_pred_pclass")
-                if 'Fare' in selected_features:
-                    prediction_inputs['fare'] = st.slider("Fare ($)", 0, 500, 50, key="clf_pred_fare")
-                if 'Siblings/Spouses' in selected_features:
-                    prediction_inputs['sibsp'] = st.slider("Siblings/Spouses Aboard", 0, 8, 0, key="clf_pred_sibsp")
-                if 'Parents/Children' in selected_features:
-                    prediction_inputs['parch'] = st.slider("Parents/Children Aboard", 0, 6, 0, key="clf_pred_parch")
-                if 'Port of Embarkation' in selected_features:
-                    port_input = st.selectbox("Port of Embarkation", ["Southampton", "Cherbourg", "Queenstown"], key="clf_pred_port")
-                    port_mapping = {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}
-                    prediction_inputs['embarked_encoded'] = port_mapping[port_input]
+                if not selected_features:
+                    st.warning("⚠️ Veuillez d'abord sélectionner des features dans la page 'Preprocessing & Exploration' pour pouvoir faire des prédictions.")
+                else:
+                    prediction_inputs = {}
+                    
+                    if 'Age' in selected_features:
+                        prediction_inputs['age'] = st.slider("Age", 0, 80, 30, key="clf_pred_age")
+                    if 'Sex' in selected_features:
+                        sex_input = st.selectbox("Gender", ["Female", "Male"], key="clf_pred_sex")
+                        prediction_inputs['sex_encoded'] = 1 if sex_input == "Male" else 0
+                    if 'Passenger Class' in selected_features:
+                        prediction_inputs['pclass'] = st.selectbox("Passenger Class", [1, 2, 3], index=1, key="clf_pred_pclass")
+                    if 'Fare' in selected_features:
+                        prediction_inputs['fare'] = st.slider("Fare ($)", 0, 500, 50, key="clf_pred_fare")
+                    if 'Siblings/Spouses' in selected_features:
+                        prediction_inputs['sibsp'] = st.slider("Siblings/Spouses Aboard", 0, 8, 0, key="clf_pred_sibsp")
+                    if 'Parents/Children' in selected_features:
+                        prediction_inputs['parch'] = st.slider("Parents/Children Aboard", 0, 6, 0, key="clf_pred_parch")
+                    if 'Port of Embarkation' in selected_features:
+                        port_input = st.selectbox("Port of Embarkation", ["Southampton", "Cherbourg", "Queenstown"], key="clf_pred_port")
+                        port_mapping = {"Southampton": 0, "Cherbourg": 1, "Queenstown": 2}
+                        prediction_inputs['embarked_encoded'] = port_mapping[port_input]
             
             with col2:
                 st.subheader("🎯 Prediction Result")
                 
-                if st.button("🔮 Predict Survival", type="primary", key="clf_predict_btn"):
+                if selected_features and st.button("🔮 Predict Survival", type="primary", key="clf_predict_btn"):
                     input_data = []
                     for feature_name in feature_names:
                         if feature_name in prediction_inputs:
