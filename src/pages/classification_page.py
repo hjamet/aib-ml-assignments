@@ -20,6 +20,11 @@ from ..utils.ui_components import (
 )
 
 
+def save_to_state(temp_key, perm_key):
+    """Save widget value from temporary key to permanent key."""
+    st.session_state[perm_key] = st.session_state[temp_key]
+
+
 def render_classification_page():
     """Render the classification page."""
     # Check if preprocessing is done
@@ -42,12 +47,18 @@ def render_classification_page():
     
     available_models = get_available_models("Classification")
     
+    # Initialize temp key from permanent key if needed
+    if "_classification_models" not in st.session_state:
+        st.session_state["_classification_models"] = st.session_state.get("classification_models", ["Random Forest", "Logistic Regression", "Support Vector Machine"])
+    
     selected_models = st.multiselect(
         "Choose Classification Models:",
         list(available_models.keys()),
-        default=st.session_state.get("classification_models", ["Random Forest", "Logistic Regression", "Support Vector Machine"]),
+        default=st.session_state["_classification_models"],
         help="Select multiple models to compare their performance",
-        key="classification_models"
+        key="_classification_models",
+        on_change=save_to_state,
+        args=("_classification_models", "classification_models")
     )
     
     # Get test size from session state
@@ -117,25 +128,46 @@ def render_classification_page():
             
             col1, col2 = st.columns(2)
             with col1:
-                default_x = st.session_state.get("clf_2d_x", feature_names[0])
-                if default_x not in feature_names:
-                    default_x = feature_names[0]
+                # Initialize temp key from permanent key if needed
+                if "_clf_2d_x" not in st.session_state:
+                    default_x = st.session_state.get("clf_2d_x", feature_names[0])
+                    if default_x not in feature_names:
+                        default_x = feature_names[0]
+                    st.session_state["_clf_2d_x"] = default_x
+                
+                # Validate that saved value is still valid
+                if st.session_state["_clf_2d_x"] not in feature_names:
+                    st.session_state["_clf_2d_x"] = feature_names[0]
+                
                 feature_x = st.selectbox(
                     "Choose X-axis feature:",
                     feature_names,
-                    index=feature_names.index(default_x),
-                    key="clf_2d_x"
+                    index=feature_names.index(st.session_state["_clf_2d_x"]),
+                    key="_clf_2d_x",
+                    on_change=save_to_state,
+                    args=("_clf_2d_x", "clf_2d_x")
                 )
             with col2:
                 available_y = [f for f in feature_names if f != feature_x]
-                default_y = st.session_state.get("clf_2d_y", available_y[0] if available_y else feature_names[0])
-                if default_y not in available_y:
-                    default_y = available_y[0] if available_y else feature_names[0]
+                
+                # Initialize temp key from permanent key if needed
+                if "_clf_2d_y" not in st.session_state:
+                    default_y = st.session_state.get("clf_2d_y", available_y[0] if available_y else feature_names[0])
+                    if default_y not in available_y:
+                        default_y = available_y[0] if available_y else feature_names[0]
+                    st.session_state["_clf_2d_y"] = default_y
+                
+                # Validate that saved value is still valid
+                if st.session_state["_clf_2d_y"] not in available_y:
+                    st.session_state["_clf_2d_y"] = available_y[0] if available_y else feature_names[0]
+                
                 feature_y = st.selectbox(
                     "Choose Y-axis feature:",
                     available_y,
-                    index=available_y.index(default_y) if default_y in available_y else 0,
-                    key="clf_2d_y"
+                    index=available_y.index(st.session_state["_clf_2d_y"]),
+                    key="_clf_2d_y",
+                    on_change=save_to_state,
+                    args=("_clf_2d_y", "clf_2d_y")
                 )
             
             if len(feature_names) == 2:

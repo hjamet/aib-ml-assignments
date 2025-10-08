@@ -21,6 +21,11 @@ from ..utils.ui_components import (
 )
 
 
+def save_to_state(temp_key, perm_key):
+    """Save widget value from temporary key to permanent key."""
+    st.session_state[perm_key] = st.session_state[temp_key]
+
+
 def render_regression_page():
     """Render the regression page."""
     # Check if preprocessing is done
@@ -43,12 +48,18 @@ def render_regression_page():
     
     available_models = get_available_models("Regression")
     
+    # Initialize temp key from permanent key if needed
+    if "_regression_models" not in st.session_state:
+        st.session_state["_regression_models"] = st.session_state.get("regression_models", ["Linear Regression", "Random Forest", "Ridge Regression"])
+    
     selected_models = st.multiselect(
         "Choose Regression Models:",
         list(available_models.keys()),
-        default=st.session_state.get("regression_models", ["Linear Regression", "Random Forest", "Ridge Regression"]),
+        default=st.session_state["_regression_models"],
         help="Select multiple models to compare their performance",
-        key="regression_models"
+        key="_regression_models",
+        on_change=save_to_state,
+        args=("_regression_models", "regression_models")
     )
     
     # Get test size from session state
@@ -131,25 +142,46 @@ def render_regression_page():
             
             col1, col2 = st.columns(2)
             with col1:
-                default_x = st.session_state.get("reg_2d_x", feature_names[0])
-                if default_x not in feature_names:
-                    default_x = feature_names[0]
+                # Initialize temp key from permanent key if needed
+                if "_reg_2d_x" not in st.session_state:
+                    default_x = st.session_state.get("reg_2d_x", feature_names[0])
+                    if default_x not in feature_names:
+                        default_x = feature_names[0]
+                    st.session_state["_reg_2d_x"] = default_x
+                
+                # Validate that saved value is still valid
+                if st.session_state["_reg_2d_x"] not in feature_names:
+                    st.session_state["_reg_2d_x"] = feature_names[0]
+                
                 feature_x = st.selectbox(
                     "Choose X-axis feature:",
                     feature_names,
-                    index=feature_names.index(default_x),
-                    key="reg_2d_x"
+                    index=feature_names.index(st.session_state["_reg_2d_x"]),
+                    key="_reg_2d_x",
+                    on_change=save_to_state,
+                    args=("_reg_2d_x", "reg_2d_x")
                 )
             with col2:
                 available_y = [f for f in feature_names if f != feature_x]
-                default_y = st.session_state.get("reg_2d_y", available_y[0] if available_y else feature_names[0])
-                if default_y not in available_y:
-                    default_y = available_y[0] if available_y else feature_names[0]
+                
+                # Initialize temp key from permanent key if needed
+                if "_reg_2d_y" not in st.session_state:
+                    default_y = st.session_state.get("reg_2d_y", available_y[0] if available_y else feature_names[0])
+                    if default_y not in available_y:
+                        default_y = available_y[0] if available_y else feature_names[0]
+                    st.session_state["_reg_2d_y"] = default_y
+                
+                # Validate that saved value is still valid
+                if st.session_state["_reg_2d_y"] not in available_y:
+                    st.session_state["_reg_2d_y"] = available_y[0] if available_y else feature_names[0]
+                
                 feature_y = st.selectbox(
                     "Choose Y-axis feature:",
                     available_y,
-                    index=available_y.index(default_y) if default_y in available_y else 0,
-                    key="reg_2d_y"
+                    index=available_y.index(st.session_state["_reg_2d_y"]),
+                    key="_reg_2d_y",
+                    on_change=save_to_state,
+                    args=("_reg_2d_y", "reg_2d_y")
                 )
             
             if len(feature_names) == 2:
