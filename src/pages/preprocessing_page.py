@@ -106,10 +106,15 @@ def render_preprocessing_page(df):
     available_features = [f for f in feature_options 
                          if f != target_feature_name and feature_mapping.get(f) != st.session_state.target_column]
     
-    # Validate selected features
+    # Si "Drop Columns", exclure aussi les features catégorielles
+    if st.session_state.encoding_method == "Drop Columns":
+        categorical_features = get_categorical_feature_names()
+        available_features = [f for f in available_features if f not in categorical_features]
+    
+    # Validate selected features (tenir compte de available_features)
     valid_selected = [f for f in st.session_state["_selected_features"] if f in available_features]
     if not valid_selected:
-        valid_selected = [f for f in ["Age", "Sex", "Passenger Class", "Fare"] if f in available_features]
+        valid_selected = [f for f in ["Age", "Passenger Class", "Fare"] if f in available_features]
     st.session_state["_selected_features"] = valid_selected
     
     st.multiselect(

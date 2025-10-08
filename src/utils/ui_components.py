@@ -498,35 +498,26 @@ def render_model_info_cards(selected_models, problem_type):
             strengths = model_info.get("strengths", [])
             best_for = model_info.get("best_for", "")
             
-            card_html = f"""
+            # Simple HTML card with just title and description
+            st.markdown(f"""
             <div class="info-card">
                 <div class="card-title">
                     <span class="card-emoji">{emoji}</span>
                     <span>{model_name}</span>
                 </div>
                 <div class="card-description">{description}</div>
-            """
+            </div>
+            """, unsafe_allow_html=True)
             
+            # Use native Streamlit components for additional info
             if strengths:
-                card_html += """
-                <div class="card-section">
-                    <div class="card-section-title">Strengths:</div>
-                    <ul class="card-list">
-                """
+                st.markdown("**Strengths:**")
                 for strength in strengths:
-                    card_html += f"<li>{strength}</li>"
-                card_html += "</ul></div>"
+                    st.markdown(f"✓ {strength}")
             
             if best_for:
-                card_html += f"""
-                <div class="card-section">
-                    <div class="card-section-title">Best for:</div>
-                    <div style="color: #6c757d; font-size: 0.85em;">{best_for}</div>
-                </div>
-                """
-            
-            card_html += "</div>"
-            st.markdown(card_html, unsafe_allow_html=True)
+                st.markdown("**Best for:**")
+                st.markdown(f"*{best_for}*")
 
 
 def render_metric_info_cards(selected_metrics, problem_type):
@@ -558,33 +549,45 @@ def render_metric_info_cards(selected_metrics, problem_type):
             strengths = metric_info.get("strengths", [])
             weaknesses = metric_info.get("weaknesses", [])
             
-            # Use Streamlit components instead of raw HTML
-            with st.container():
+            # Build content HTML to put everything inside the card
+            content_html = f'<div class="card-description">{description}</div>'
+            
+            if usage:
+                content_html += f'<div class="card-section"><div class="card-section-title">When to use:</div><div style="color: #6c757d; font-size: 0.85em;">{usage}</div></div>'
+            
+            if strengths:
+                content_html += '<div class="card-section"><div class="card-section-title">Strengths:</div><ul class="card-list">'
+                for strength in strengths:
+                    content_html += f'<li>{strength}</li>'
+                content_html += '</ul></div>'
+            
+            if weaknesses:
+                content_html += '<div class="card-section"><div class="card-section-title">Weaknesses:</div><ul class="card-list weakness-list">'
+                for weakness in weaknesses:
+                    content_html += f'<li>{weakness}</li>'
+                content_html += '</ul></div>'
+            
+            # Display complete card with all content inside
+            st.markdown(f"""
+            <div class="info-card">
+                <div class="card-title">
+                    <span class="card-emoji">{emoji}</span>
+                    <span>{metric_name}</span>
+                </div>
+                {content_html}
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display formula below the card (as requested, formula should be included in card)
+            if formula:
                 st.markdown(f"""
-                <div class="info-card">
-                    <div class="card-title">
-                        <span class="card-emoji">{emoji}</span>
-                        <span>{metric_name}</span>
+                <div class="info-card" style="margin-top: -10px; padding-top: 10px;">
+                    <div class="card-section">
+                        <div class="card-section-title">Formula:</div>
+                        <div style="text-align: center; padding: 10px;">
+                            ${formula}$
+                        </div>
                     </div>
-                    <div class="card-description">{description}</div>
                 </div>
                 """, unsafe_allow_html=True)
-                
-                if usage:
-                    st.markdown("**When to use:**")
-                    st.markdown(f"*{usage}*")
-                
-                if strengths:
-                    st.markdown("**Strengths:**")
-                    for strength in strengths:
-                        st.markdown(f"✓ {strength}")
-                
-                if weaknesses:
-                    st.markdown("**Weaknesses:**")
-                    for weakness in weaknesses:
-                        st.markdown(f"⚠️ {weakness}")
-                
-                # Display formula separately if it exists
-                if formula:
-                    st.latex(formula)
 
