@@ -177,17 +177,35 @@ def create_2d_scatter_plot(X_test, y_test, y_pred, feature_x, feature_y, problem
     return fig
 
 
-def create_train_metrics_chart(results_df, problem_type):
+def create_train_metrics_chart(results_df, problem_type, selected_metrics=None):
     """Create a bar chart showing training set metrics for all models"""
+    models = results_df['Model'].tolist()
+    fig = go.Figure()
+    
     if problem_type == "Classification":
-        # Create grouped bar chart for classification metrics
-        models = results_df['Model'].tolist()
+        # Metric configuration for classification
+        metric_config = {
+            'Accuracy': {'column': 'Train Accuracy', 'color': 'lightblue'},
+            'Precision': {'column': 'Train Precision', 'color': 'lightgreen'},
+            'Recall': {'column': 'Train Recall', 'color': 'lightsalmon'},
+            'F1': {'column': 'Train F1', 'color': 'lightcoral'}
+        }
         
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='Accuracy', x=models, y=results_df['Train Accuracy'], marker_color='lightblue'))
-        fig.add_trace(go.Bar(name='Precision', x=models, y=results_df['Train Precision'], marker_color='lightgreen'))
-        fig.add_trace(go.Bar(name='Recall', x=models, y=results_df['Train Recall'], marker_color='lightsalmon'))
-        fig.add_trace(go.Bar(name='F1-Score', x=models, y=results_df['Train F1'], marker_color='lightcoral'))
+        # Filter metrics if selected_metrics is provided
+        if selected_metrics:
+            metrics_to_show = [m for m in selected_metrics if m in metric_config]
+        else:
+            metrics_to_show = list(metric_config.keys())
+        
+        # Add traces for selected metrics
+        for metric in metrics_to_show:
+            config = metric_config[metric]
+            fig.add_trace(go.Bar(
+                name=metric,
+                x=models,
+                y=results_df[config['column']],
+                marker_color=config['color']
+            ))
         
         fig.update_layout(
             title='Training Set Performance',
@@ -198,36 +216,90 @@ def create_train_metrics_chart(results_df, problem_type):
             yaxis=dict(range=[0, 1])
         )
     else:  # Regression
-        models = results_df['Model'].tolist()
+        # Metric configuration for regression
+        metric_config = {
+            'R²': {'column': 'Train R²', 'color': 'lightblue', 'yaxis': 'y'},
+            'RMSE': {'column': 'Train RMSE', 'color': 'lightcoral', 'yaxis': 'y2'},
+            'MAE': {'column': 'Train MAE', 'color': 'lightgreen', 'yaxis': 'y2'}
+        }
         
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='R² Score', x=models, y=results_df['Train R²'], marker_color='lightblue'))
-        fig.add_trace(go.Bar(name='RMSE', x=models, y=results_df['Train RMSE'], marker_color='lightcoral', yaxis='y2'))
-        fig.add_trace(go.Bar(name='MAE', x=models, y=results_df['Train MAE'], marker_color='lightgreen', yaxis='y2'))
+        # Filter metrics if selected_metrics is provided
+        if selected_metrics:
+            metrics_to_show = [m for m in selected_metrics if m in metric_config]
+        else:
+            metrics_to_show = list(metric_config.keys())
         
-        fig.update_layout(
-            title='Training Set Performance',
-            xaxis_title='Model',
-            yaxis_title='R² Score',
-            yaxis2=dict(title='Error Metrics', overlaying='y', side='right'),
-            barmode='group',
-            height=400
-        )
+        # Check if we need dual axes
+        has_r2 = 'R²' in metrics_to_show
+        has_errors = any(m in ['RMSE', 'MAE'] for m in metrics_to_show)
+        
+        # Add traces for selected metrics
+        for metric in metrics_to_show:
+            config = metric_config[metric]
+            trace_params = {
+                'name': metric,
+                'x': models,
+                'y': results_df[config['column']],
+                'marker_color': config['color']
+            }
+            
+            # Only add yaxis parameter if we have both types of metrics
+            if has_r2 and has_errors and config['yaxis'] == 'y2':
+                trace_params['yaxis'] = 'y2'
+            
+            fig.add_trace(go.Bar(**trace_params))
+        
+        # Configure layout
+        layout_params = {
+            'title': 'Training Set Performance',
+            'xaxis_title': 'Model',
+            'barmode': 'group',
+            'height': 400
+        }
+        
+        # Add appropriate y-axis labels
+        if has_r2 and has_errors:
+            layout_params['yaxis_title'] = 'R² Score'
+            layout_params['yaxis2'] = dict(title='Error Metrics', overlaying='y', side='right')
+        elif has_r2:
+            layout_params['yaxis_title'] = 'R² Score'
+        else:
+            layout_params['yaxis_title'] = 'Error Metrics'
+        
+        fig.update_layout(**layout_params)
     
     return fig
 
 
-def create_test_metrics_chart(results_df, problem_type):
+def create_test_metrics_chart(results_df, problem_type, selected_metrics=None):
     """Create a bar chart showing test set metrics for all models"""
+    models = results_df['Model'].tolist()
+    fig = go.Figure()
+    
     if problem_type == "Classification":
-        # Create grouped bar chart for classification metrics
-        models = results_df['Model'].tolist()
+        # Metric configuration for classification
+        metric_config = {
+            'Accuracy': {'column': 'Test Accuracy', 'color': 'lightblue'},
+            'Precision': {'column': 'Test Precision', 'color': 'lightgreen'},
+            'Recall': {'column': 'Test Recall', 'color': 'lightsalmon'},
+            'F1': {'column': 'Test F1', 'color': 'lightcoral'}
+        }
         
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='Accuracy', x=models, y=results_df['Test Accuracy'], marker_color='lightblue'))
-        fig.add_trace(go.Bar(name='Precision', x=models, y=results_df['Test Precision'], marker_color='lightgreen'))
-        fig.add_trace(go.Bar(name='Recall', x=models, y=results_df['Test Recall'], marker_color='lightsalmon'))
-        fig.add_trace(go.Bar(name='F1-Score', x=models, y=results_df['Test F1'], marker_color='lightcoral'))
+        # Filter metrics if selected_metrics is provided
+        if selected_metrics:
+            metrics_to_show = [m for m in selected_metrics if m in metric_config]
+        else:
+            metrics_to_show = list(metric_config.keys())
+        
+        # Add traces for selected metrics
+        for metric in metrics_to_show:
+            config = metric_config[metric]
+            fig.add_trace(go.Bar(
+                name=metric,
+                x=models,
+                y=results_df[config['column']],
+                marker_color=config['color']
+            ))
         
         fig.update_layout(
             title='Test Set Performance',
@@ -238,21 +310,57 @@ def create_test_metrics_chart(results_df, problem_type):
             yaxis=dict(range=[0, 1])
         )
     else:  # Regression
-        models = results_df['Model'].tolist()
+        # Metric configuration for regression
+        metric_config = {
+            'R²': {'column': 'Test R²', 'color': 'lightblue', 'yaxis': 'y'},
+            'RMSE': {'column': 'Test RMSE', 'color': 'lightcoral', 'yaxis': 'y2'},
+            'MAE': {'column': 'Test MAE', 'color': 'lightgreen', 'yaxis': 'y2'}
+        }
         
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='R² Score', x=models, y=results_df['Test R²'], marker_color='lightblue'))
-        fig.add_trace(go.Bar(name='RMSE', x=models, y=results_df['Test RMSE'], marker_color='lightcoral', yaxis='y2'))
-        fig.add_trace(go.Bar(name='MAE', x=models, y=results_df['Test MAE'], marker_color='lightgreen', yaxis='y2'))
+        # Filter metrics if selected_metrics is provided
+        if selected_metrics:
+            metrics_to_show = [m for m in selected_metrics if m in metric_config]
+        else:
+            metrics_to_show = list(metric_config.keys())
         
-        fig.update_layout(
-            title='Test Set Performance',
-            xaxis_title='Model',
-            yaxis_title='R² Score',
-            yaxis2=dict(title='Error Metrics', overlaying='y', side='right'),
-            barmode='group',
-            height=400
-        )
+        # Check if we need dual axes
+        has_r2 = 'R²' in metrics_to_show
+        has_errors = any(m in ['RMSE', 'MAE'] for m in metrics_to_show)
+        
+        # Add traces for selected metrics
+        for metric in metrics_to_show:
+            config = metric_config[metric]
+            trace_params = {
+                'name': metric,
+                'x': models,
+                'y': results_df[config['column']],
+                'marker_color': config['color']
+            }
+            
+            # Only add yaxis parameter if we have both types of metrics
+            if has_r2 and has_errors and config['yaxis'] == 'y2':
+                trace_params['yaxis'] = 'y2'
+            
+            fig.add_trace(go.Bar(**trace_params))
+        
+        # Configure layout
+        layout_params = {
+            'title': 'Test Set Performance',
+            'xaxis_title': 'Model',
+            'barmode': 'group',
+            'height': 400
+        }
+        
+        # Add appropriate y-axis labels
+        if has_r2 and has_errors:
+            layout_params['yaxis_title'] = 'R² Score'
+            layout_params['yaxis2'] = dict(title='Error Metrics', overlaying='y', side='right')
+        elif has_r2:
+            layout_params['yaxis_title'] = 'R² Score'
+        else:
+            layout_params['yaxis_title'] = 'Error Metrics'
+        
+        fig.update_layout(**layout_params)
     
     return fig
 

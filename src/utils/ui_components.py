@@ -4,8 +4,28 @@ Contains reusable Streamlit UI components.
 """
 
 import streamlit as st
+import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+
+# Metrics configuration
+METRICS_TO_MAXIMIZE = {'Accuracy', 'Precision', 'Recall', 'F1', 'R²'}
+METRICS_TO_MINIMIZE = {'RMSE', 'MAE'}
+
+METRIC_COLUMN_MAPPING = {
+    'Classification': {
+        'Accuracy': 'Accuracy',
+        'Precision': 'Precision', 
+        'Recall': 'Recall',
+        'F1': 'F1'
+    },
+    'Regression': {
+        'R²': 'R²',
+        'RMSE': 'RMSE',
+        'MAE': 'MAE'
+    }
+}
 
 
 def display_dataset_overview(df):
@@ -35,6 +55,100 @@ def display_preprocessing_results(before_count, after_count, n_features, feature
         st.warning(f"⚠️ Removed {before_count - after_count} rows with missing values")
     
     st.success(f"✅ Data preprocessing completed! Using {n_features} features: {', '.join(feature_list)}")
+
+
+def display_metrics_table(results_df, problem_type, selected_metrics):
+    """
+    Display metrics in two side-by-side tables (Train Set and Test Set).
+    
+    Args:
+        results_df (pd.DataFrame): DataFrame containing model results
+        problem_type (str): Either "Classification" or "Regression"
+        selected_metrics (list): List of selected metrics to display
+    """
+    if results_df.empty or not selected_metrics:
+        st.warning("⚠️ No models or metrics selected to display.")
+        return
+    
+    # Create two columns for Train and Test tables
+    col_train, col_test = st.columns(2)
+    
+    # Prepare data for Train Set table
+    train_data = {'Model': results_df['Model'].tolist()}
+    test_data = {'Model': results_df['Model'].tolist()}
+    
+    # Map selected metrics to column names
+    metric_mapping = METRIC_COLUMN_MAPPING[problem_type]
+    
+    for metric in selected_metrics:
+        column_name = metric_mapping.get(metric, metric)
+        train_col = f'Train {column_name}'
+        test_col = f'Test {column_name}'
+        
+        if train_col in results_df.columns:
+            train_data[metric] = results_df[train_col].tolist()
+        if test_col in results_df.columns:
+            test_data[metric] = results_df[test_col].tolist()
+    
+    # Create DataFrames
+    train_df = pd.DataFrame(train_data)
+    test_df = pd.DataFrame(test_data)
+    
+    # Function to format values
+    def format_value(val, metric):
+        """Format metric value based on its type."""
+        if pd.isna(val):
+            return "N/A"
+        
+        # Values between 0 and 1 (except R²) as percentage
+        if metric in {'Accuracy', 'Precision', 'Recall', 'F1'}:
+            return f"{val:.1%}"
+        elif metric == 'R²':
+            return f"{val:.3f}"
+        else:  # RMSE, MAE
+            return f"{val:.2f}"
+    
+    # Function to add trophy emoji to best scores
+    def add_trophy_to_best(df, metric):
+        """Add trophy emoji to the best score for a metric."""
+        if metric not in df.columns or len(df) == 0:
+            return df
+        
+        values = df[metric].copy()
+        
+        # Determine if we're looking for max or min
+        if metric in METRICS_TO_MAXIMIZE:
+            best_idx = values.idxmax()
+        elif metric in METRICS_TO_MINIMIZE:
+            best_idx = values.idxmin()
+        else:
+            return df
+        
+        # Format all values
+        formatted_values = [format_value(val, metric) for val in values]
+        
+        # Add trophy to best score
+        if not pd.isna(values.iloc[best_idx]):
+            formatted_values[best_idx] = f"{formatted_values[best_idx]} 🏆"
+        
+        df[metric] = formatted_values
+        return df
+    
+    # Format and add trophies to metrics
+    for metric in selected_metrics:
+        if metric in train_df.columns:
+            train_df = add_trophy_to_best(train_df, metric)
+        if metric in test_df.columns:
+            test_df = add_trophy_to_best(test_df, metric)
+    
+    # Display tables
+    with col_train:
+        st.markdown("**Train Set Performance**")
+        st.dataframe(train_df, use_container_width=True, hide_index=True)
+    
+    with col_test:
+        st.markdown("**Test Set Performance**")
+        st.dataframe(test_df, use_container_width=True, hide_index=True)
 
 
 def display_model_metrics_columns(result, problem_type):

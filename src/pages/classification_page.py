@@ -16,7 +16,7 @@ from ..utils.visualization import (
     create_feature_importance_plot, create_feature_coefficients_plot
 )
 from ..utils.ui_components import (
-    display_model_metrics_columns, render_hyperparameter_controls,
+    display_model_metrics_columns, display_metrics_table, render_hyperparameter_controls,
     render_prediction_inputs, display_prediction_result
 )
 
@@ -62,6 +62,25 @@ def render_classification_page():
         args=("_classification_models", "classification_models")
     )
     
+    # Metric selection
+    st.markdown("### 📊 Metric Selection")
+    
+    available_metrics = ['Accuracy', 'Precision', 'Recall', 'F1']
+    
+    # Initialize temp key from permanent key if needed
+    if "_classification_metrics" not in st.session_state:
+        st.session_state["_classification_metrics"] = st.session_state.get("classification_metrics", available_metrics)
+    
+    selected_metrics = st.multiselect(
+        "Choose Metrics to Display:",
+        available_metrics,
+        default=st.session_state["_classification_metrics"],
+        help="Select which metrics to display in tables and charts",
+        key="_classification_metrics",
+        on_change=save_to_state,
+        args=("_classification_metrics", "classification_metrics")
+    )
+    
     # Get test size from session state
     test_size = st.session_state.get("test_size", 20)
     
@@ -85,20 +104,19 @@ def render_classification_page():
         
         st.subheader("📊 Model Performance Comparison")
         
-        # Metrics display for each model
-        for result in results:
-            display_model_metrics_columns(result, "Classification")
+        # Metrics display as table
+        display_metrics_table(results_df, "Classification", selected_metrics)
         
         # Comparison charts in two columns
         st.markdown("### 📈 Performance Metrics Comparison")
         col_train, col_test = st.columns(2)
         
         with col_train:
-            fig_train = create_train_metrics_chart(results_df, "Classification")
+            fig_train = create_train_metrics_chart(results_df, "Classification", selected_metrics)
             st.plotly_chart(fig_train, use_container_width=True)
         
         with col_test:
-            fig_test = create_test_metrics_chart(results_df, "Classification")
+            fig_test = create_test_metrics_chart(results_df, "Classification", selected_metrics)
             st.plotly_chart(fig_test, use_container_width=True)
         
         # Model Exploration - Allow student to select any trained model
