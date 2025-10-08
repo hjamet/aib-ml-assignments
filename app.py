@@ -75,9 +75,17 @@ def home_page():
     st.session_state.df = df
     
     # Header
-    st.markdown('<h1 class="main-header">🤖 Machine Learning Adventure: Interactive Demo</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">🚢 Titanic ML Explorer: Interactive Machine Learning Demo</h1>', unsafe_allow_html=True)
     
     st.markdown("""
+    <div class="info-box">
+        <h3>📚 About This Project</h3>
+        <p>This interactive application allows you to explore the famous Titanic dataset through Machine Learning techniques. 
+        Discover how ML algorithms can help predict survival rates and understand the factors that influenced passengers' fate.</p>
+        <p><strong>Created by:</strong> Henri Jamet</p>
+        <p><strong>Course:</strong> Artificial Intelligence in Business (AIB) - Bachelor's degree, University of Lausanne</p>
+    </div>
+    
     <div class="info-box">
         <h3>🎓 Welcome to Your ML Journey!</h3>
         <p>This interactive demo will teach you Machine Learning concepts without any coding! 
