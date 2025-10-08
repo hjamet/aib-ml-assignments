@@ -177,11 +177,13 @@ def render_classification_page():
         toc_subsubheader(f"🔍 Confusion Matrices - {selected_model_name}")
         
         y_pred_train = selected_model.predict(X_train)
-        cm_train = confusion_matrix(y_train, y_pred_train)
-        cm_test = confusion_matrix(y_test, y_pred_selected)
         
-        # Get unique class labels for proper display
+        # Get unique class labels for proper display (from full dataset)
         class_labels = sorted(y.unique())
+        
+        # Create confusion matrices with all possible labels to ensure consistent shape
+        cm_train = confusion_matrix(y_train, y_pred_train, labels=class_labels)
+        cm_test = confusion_matrix(y_test, y_pred_selected, labels=class_labels)
         
         # Check if this is the 'survived' target (binary with values 0 and 1)
         target_name = st.session_state.get('target_column_persistent', 'target')
