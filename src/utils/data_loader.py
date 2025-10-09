@@ -16,6 +16,5 @@ def load_titanic_data():
         pd.DataFrame: The Titanic dataset
     """
     df = sns.load_dataset('titanic')
-    print(df.head())
     return df
 

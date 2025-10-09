@@ -142,11 +142,11 @@ def render_regression_page():
         
         with col_train:
             fig_train = create_train_metrics_chart(results_df, "Regression", selected_metrics)
-            st.plotly_chart(fig_train, width='stretch')
+            st.plotly_chart(fig_train, use_container_width=True)
         
         with col_test:
             fig_test = create_test_metrics_chart(results_df, "Regression", selected_metrics)
-            st.plotly_chart(fig_test, width='stretch')
+            st.plotly_chart(fig_test, use_container_width=True)
         
         # Model Exploration - Allow student to select any trained model
         toc_subheader("🔍 Model Exploration")
@@ -188,7 +188,7 @@ def render_regression_page():
             min_val, max_val = min(y_test.min(), y_pred_selected.min()), max(y_test.max(), y_pred_selected.max())
             fig.add_shape(type="line", x0=min_val, y0=min_val, x1=max_val, y1=max_val,
                         line=dict(color="red", width=2, dash="dash"))
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             # Residuals plot
@@ -197,7 +197,7 @@ def render_regression_page():
                            title=f"Residuals Plot - {selected_model_name}",
                            labels={'x': 'Predicted Values', 'y': 'Residuals'})
             fig.add_hline(y=0, line_dash="dash", line_color="red")
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         
         # Metrics explanation
         mse = mean_squared_error(y_test, y_pred_selected)
@@ -261,11 +261,11 @@ def render_regression_page():
             
             if len(feature_names) == 2:
                 fig = create_regression_surface_plot(X_train, y_train, selected_model, feature_x, feature_y, selected_model_name, "Survived")
-                st.plotly_chart(fig, width='stretch')
+                st.plotly_chart(fig, use_container_width=True)
                 st.info(f"💡 **Prediction Surface for {selected_model_name}**: The colored surface shows the model's predictions across the feature space.")
             else:
                 fig = create_2d_scatter_plot(X_test, y_test, y_pred_selected, feature_x, feature_y, "Regression", "Survived")
-                st.plotly_chart(fig, width='stretch')
+                st.plotly_chart(fig, use_container_width=True)
                 st.info(f"💡 **2D Feature Plot for {selected_model_name}**: Each point is a passenger. Color intensity shows the target value. Size shows prediction accuracy.")
         
         # Feature Importance
@@ -273,7 +273,7 @@ def render_regression_page():
             toc_subsubheader(f"🎯 Feature Importance - {selected_model_name}")
             
             fig = create_feature_importance_plot(feature_names, selected_model.feature_importances_, selected_model_name)
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
             
             st.info(f"💡 **Feature Importance for {selected_model_name}**: Shows which passenger characteristics the model considers most important.")
         
@@ -281,7 +281,7 @@ def render_regression_page():
             toc_subsubheader(f"🎯 Feature Coefficients - {selected_model_name}")
             
             fig = create_feature_coefficients_plot(feature_names, selected_model.coef_, selected_model_name)
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
             
             st.info(f"💡 **Feature Coefficients for {selected_model_name}**: Shows how much each feature influences the model's predictions.")
         

@@ -89,7 +89,6 @@ def render_preprocessing_page(df):
     
     st.checkbox(
         "📏 Normalize Features",
-        value=st.session_state["_normalize_features"],
         key="_normalize_features",
         on_change=save_to_state,
         args=("_normalize_features", "normalize_features")
@@ -120,7 +119,6 @@ def render_preprocessing_page(df):
     st.multiselect(
         "📊 Select Features:",
         available_features,
-        default=st.session_state["_selected_features"],
         key="_selected_features",
         on_change=save_to_state,
         args=("_selected_features", "selected_features")
@@ -197,12 +195,12 @@ def render_preprocessing_page(df):
             fig = px.histogram(df, x=exploration_feature_left, 
                              title=f'Distribution of {exploration_feature_left.title()}',
                              color_discrete_sequence=['skyblue'])
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         else:
             fig = px.histogram(df, x=exploration_feature_left, 
                              title=f'Distribution of {exploration_feature_left.title()}',
                              color_discrete_sequence=['lightgreen'])
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         
         # Survival rate plot (if survived column exists)
         if 'survived' in df.columns:
@@ -211,7 +209,7 @@ def render_preprocessing_page(df):
                         title=f'Survival Rate by {exploration_feature_left.title()}',
                         color_discrete_sequence=['orange'])
             fig.update_yaxes(title='Survival Rate')
-            st.plotly_chart(fig, width='stretch')
+            st.plotly_chart(fig, use_container_width=True)
         
         # Insights
         insights = {
@@ -319,7 +317,7 @@ def render_preprocessing_page(df):
                 fig = px.histogram(df_transformed, x=exploration_feature_right, 
                                  title=f'Distribution of {exploration_feature_right}',
                                  color_discrete_sequence=['purple'])
-                st.plotly_chart(fig, width='stretch')
+                st.plotly_chart(fig, use_container_width=True)
                 
                 # Target correlation plot - Bar chart showing target rate by feature
                 if target_column_val in df_transformed.columns:
@@ -328,7 +326,7 @@ def render_preprocessing_page(df):
                                 title=f'{target_column_val.title()} Rate by {exploration_feature_right}',
                                 color_discrete_sequence=['orange'])
                     fig.update_yaxes(title=f'{target_column_val.title()} Rate')
-                    st.plotly_chart(fig, width='stretch')
+                    st.plotly_chart(fig, use_container_width=True)
                 
                 # Insights for transformed features (same as original)
                 # Match by feature name pattern to handle encoded columns
