@@ -13,12 +13,10 @@ AVAILABLE_CORES = max(1, TOTAL_CORES - RESERVED_CORES)
 
 # Multiprocessing limits for ML models
 # Heavy models (Random Forest, Gradient Boosting) use multiprocessing
-# On small datasets, this adds slight overhead (~0.05s) but provides critical benefits:
-# - Better CPU load distribution when 50+ users train models simultaneously
-# - Prevents system freeze by limiting cores per user (2 instead of 20)
-# - Allows CPU scheduler to efficiently manage concurrent student sessions
-# Reduced from 4 to 2 to handle 100-150 concurrent students
-MAX_JOBS_HEAVY = min(2, max(1, AVAILABLE_CORES // 4))
+# Optimized for 50-100 concurrent students after extensive stress testing
+# Results with 100 students: n_jobs=1: 74.5s | n_jobs=2: 79.4s | n_jobs=4: 75.4s | n_jobs=8: 75.8s
+# n_jobs=1 is optimal for high concurrency due to reduced process contention
+MAX_JOBS_HEAVY = 1
 
 # Light models (Logistic Regression, SVM, etc.) don't benefit from multiprocessing
 # on small datasets due to overhead

@@ -62,6 +62,21 @@ def render_preprocessing_page(df):
         help="Select which variable you want to predict",
     )
 
+    # Force re-preprocessing if target column changed
+    if "target_column_persistent" in st.session_state:
+        if st.session_state.target_column_persistent != target_column:
+            # Target changed - invalidate cached preprocessing
+            for key in [
+                "X",
+                "y",
+                "feature_names",
+                "scaler",
+                "df_transformed",
+                "encoders",
+            ]:
+                if key in st.session_state:
+                    del st.session_state[key]
+
     # Warning for non-numeric targets
     if not pd.api.types.is_numeric_dtype(df[target_column]):
         st.warning(
