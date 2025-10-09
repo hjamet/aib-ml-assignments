@@ -4,10 +4,19 @@ Handles model instantiation and configuration.
 """
 
 from sklearn.ensemble import (
-    RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier,
-    RandomForestRegressor, GradientBoostingRegressor
+    RandomForestClassifier,
+    GradientBoostingClassifier,
+    AdaBoostClassifier,
+    RandomForestRegressor,
+    GradientBoostingRegressor,
 )
-from sklearn.linear_model import LogisticRegression, RidgeClassifier, LinearRegression, Ridge, Lasso
+from sklearn.linear_model import (
+    LogisticRegression,
+    RidgeClassifier,
+    LinearRegression,
+    Ridge,
+    Lasso,
+)
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -20,25 +29,24 @@ from .config import MAX_JOBS_HEAVY, MAX_JOBS_LIGHT
 def get_available_models(problem_type):
     """
     Get available models for the specified problem type.
-    
+
     Args:
         problem_type (str): Either "Classification" or "Regression"
-        
+
     Returns:
         dict: Dictionary mapping model names to descriptions
     """
     if problem_type == "Classification":
         return {
             "Logistic Regression": "📊 Simple linear classifier",
-            "Random Forest": "🌳 Ensemble of decision trees", 
+            "Random Forest": "🌳 Ensemble of decision trees",
             "Support Vector Machine": "🎯 Finds optimal decision boundary",
             "Decision Tree": "🌲 Tree-based decision making",
             "K-Nearest Neighbors": "👥 Classification by similarity",
             "Gradient Boosting": "🚀 Advanced ensemble method",
             "AdaBoost": "⚡ Adaptive boosting ensemble",
             "Naive Bayes": "📈 Probabilistic classifier",
-            "Neural Network": "🧠 Multi-layer perceptron",
-            "Ridge Classifier": "📏 Regularized linear classifier"
+            "Ridge Classifier": "📏 Regularized linear classifier",
         }
     else:  # Regression
         return {
@@ -50,261 +58,296 @@ def get_available_models(problem_type):
             "Gradient Boosting": "🚀 Advanced ensemble regression",
             "Ridge Regression": "📏 Regularized linear regression",
             "Lasso Regression": "🎯 Feature-selecting linear regression",
-            "Neural Network": "🧠 Multi-layer perceptron regression"
         }
 
 
 def get_model_descriptions(problem_type):
     """
     Get detailed model descriptions for UI display.
-    
+
     Args:
         problem_type (str): Either "Classification" or "Regression"
-        
+
     Returns:
         dict: Dictionary mapping model names to description dictionaries
     """
     if problem_type == "Classification":
         return {
             "Logistic Regression": {
-                "emoji": "📊", "description": "A linear model that uses the logistic function to model probabilities.",
-                "strengths": ["Fast training", "Interpretable", "Good baseline"], "best_for": "Linear relationships"
+                "emoji": "📊",
+                "description": "A linear model that uses the logistic function to model probabilities.",
+                "strengths": ["Fast training", "Interpretable", "Good baseline"],
+                "best_for": "Linear relationships",
             },
             "Random Forest": {
-                "emoji": "🌳", "description": "An ensemble method that combines multiple decision trees for classification.",
-                "strengths": ["Handles non-linear data", "Robust to outliers", "Feature importance"], "best_for": "Complex patterns"
+                "emoji": "🌳",
+                "description": "An ensemble method that combines multiple decision trees for classification.",
+                "strengths": [
+                    "Handles non-linear data",
+                    "Robust to outliers",
+                    "Feature importance",
+                ],
+                "best_for": "Complex patterns",
             },
             "Support Vector Machine": {
-                "emoji": "🎯", "description": "Finds optimal hyperplane to separate classes with maximum margin.",
-                "strengths": ["Effective in high dimensions", "Memory efficient"], "best_for": "High-dimensional data"
+                "emoji": "🎯",
+                "description": "Finds optimal hyperplane to separate classes with maximum margin.",
+                "strengths": ["Effective in high dimensions", "Memory efficient"],
+                "best_for": "High-dimensional data",
             },
             "Decision Tree": {
-                "emoji": "🌲", "description": "Tree-like model that makes decisions by splitting data based on features.",
-                "strengths": ["Highly interpretable", "No preprocessing needed"], "best_for": "Interpretability"
+                "emoji": "🌲",
+                "description": "Tree-like model that makes decisions by splitting data based on features.",
+                "strengths": ["Highly interpretable", "No preprocessing needed"],
+                "best_for": "Interpretability",
             },
             "K-Nearest Neighbors": {
-                "emoji": "👥", "description": "Classifies based on majority class of k nearest neighbors.",
-                "strengths": ["Simple concept", "No training period"], "best_for": "Small datasets"
+                "emoji": "👥",
+                "description": "Classifies based on majority class of k nearest neighbors.",
+                "strengths": ["Simple concept", "No training period"],
+                "best_for": "Small datasets",
             },
             "Gradient Boosting": {
-                "emoji": "🚀", "description": "Builds models sequentially, correcting errors of previous ones.",
-                "strengths": ["High accuracy", "Handles missing values"], "best_for": "High accuracy requirements"
+                "emoji": "🚀",
+                "description": "Builds models sequentially, correcting errors of previous ones.",
+                "strengths": ["High accuracy", "Handles missing values"],
+                "best_for": "High accuracy requirements",
             },
             "AdaBoost": {
-                "emoji": "⚡", "description": "Adaptive boosting focusing on misclassified examples.",
-                "strengths": ["Good performance", "Reduces bias"], "best_for": "Binary classification"
+                "emoji": "⚡",
+                "description": "Adaptive boosting focusing on misclassified examples.",
+                "strengths": ["Good performance", "Reduces bias"],
+                "best_for": "Binary classification",
             },
             "Naive Bayes": {
-                "emoji": "📈", "description": "Probabilistic classifier based on Bayes' theorem.",
-                "strengths": ["Fast training", "Works with small datasets"], "best_for": "Text classification"
+                "emoji": "📈",
+                "description": "Probabilistic classifier based on Bayes' theorem.",
+                "strengths": ["Fast training", "Works with small datasets"],
+                "best_for": "Text classification",
             },
             "Neural Network": {
-                "emoji": "🧠", "description": "Multi-layer perceptron for classification tasks.",
-                "strengths": ["Learns complex patterns", "Flexible"], "best_for": "Complex patterns, large datasets"
+                "emoji": "🧠",
+                "description": "Multi-layer perceptron for classification tasks.",
+                "strengths": ["Learns complex patterns", "Flexible"],
+                "best_for": "Complex patterns, large datasets",
             },
             "Ridge Classifier": {
-                "emoji": "📏", "description": "Linear classifier with L2 regularization.",
-                "strengths": ["Handles multicollinearity", "Prevents overfitting"], "best_for": "Linear problems"
-            }
+                "emoji": "📏",
+                "description": "Linear classifier with L2 regularization.",
+                "strengths": ["Handles multicollinearity", "Prevents overfitting"],
+                "best_for": "Linear problems",
+            },
         }
     else:  # Regression
         return {
             "Linear Regression": {
-                "emoji": "📈", "description": "Simple linear regression modeling relationships between features and target.",
-                "strengths": ["Fast training", "Interpretable", "Good baseline"], "best_for": "Linear relationships"
+                "emoji": "📈",
+                "description": "Simple linear regression modeling relationships between features and target.",
+                "strengths": ["Fast training", "Interpretable", "Good baseline"],
+                "best_for": "Linear relationships",
             },
             "Random Forest": {
-                "emoji": "🌳", "description": "An ensemble method that combines multiple decision trees for regression.",
-                "strengths": ["Handles non-linear data", "Robust to outliers", "Feature importance"], "best_for": "Complex patterns"
+                "emoji": "🌳",
+                "description": "An ensemble method that combines multiple decision trees for regression.",
+                "strengths": [
+                    "Handles non-linear data",
+                    "Robust to outliers",
+                    "Feature importance",
+                ],
+                "best_for": "Complex patterns",
             },
             "Support Vector Regression": {
-                "emoji": "🎯", "description": "Uses support vector machines for continuous value prediction.",
-                "strengths": ["Effective in high dimensions", "Memory efficient"], "best_for": "Non-linear regression"
+                "emoji": "🎯",
+                "description": "Uses support vector machines for continuous value prediction.",
+                "strengths": ["Effective in high dimensions", "Memory efficient"],
+                "best_for": "Non-linear regression",
             },
             "Decision Tree": {
-                "emoji": "🌲", "description": "Tree-like model that predicts continuous values by splitting data.",
-                "strengths": ["Highly interpretable", "No preprocessing needed"], "best_for": "Interpretability"
+                "emoji": "🌲",
+                "description": "Tree-like model that predicts continuous values by splitting data.",
+                "strengths": ["Highly interpretable", "No preprocessing needed"],
+                "best_for": "Interpretability",
             },
             "K-Nearest Neighbors": {
-                "emoji": "👥", "description": "Predicts values based on average of k nearest neighbors.",
-                "strengths": ["Simple concept", "No training period"], "best_for": "Small datasets"
+                "emoji": "👥",
+                "description": "Predicts values based on average of k nearest neighbors.",
+                "strengths": ["Simple concept", "No training period"],
+                "best_for": "Small datasets",
             },
             "Gradient Boosting": {
-                "emoji": "🚀", "description": "Builds regression models sequentially, correcting errors of previous ones.",
-                "strengths": ["High accuracy", "Handles missing values"], "best_for": "High accuracy requirements"
+                "emoji": "🚀",
+                "description": "Builds regression models sequentially, correcting errors of previous ones.",
+                "strengths": ["High accuracy", "Handles missing values"],
+                "best_for": "High accuracy requirements",
             },
             "Ridge Regression": {
-                "emoji": "📏", "description": "Linear regression with L2 regularization to prevent overfitting.",
-                "strengths": ["Handles multicollinearity", "Prevents overfitting"], "best_for": "Linear problems with many features"
+                "emoji": "📏",
+                "description": "Linear regression with L2 regularization to prevent overfitting.",
+                "strengths": ["Handles multicollinearity", "Prevents overfitting"],
+                "best_for": "Linear problems with many features",
             },
             "Lasso Regression": {
-                "emoji": "🎯", "description": "Linear regression with L1 regularization for feature selection.",
-                "strengths": ["Feature selection", "Prevents overfitting"], "best_for": "Sparse feature selection"
+                "emoji": "🎯",
+                "description": "Linear regression with L1 regularization for feature selection.",
+                "strengths": ["Feature selection", "Prevents overfitting"],
+                "best_for": "Sparse feature selection",
             },
             "Neural Network": {
-                "emoji": "🧠", "description": "Multi-layer perceptron for regression tasks.",
-                "strengths": ["Learns complex patterns", "Flexible"], "best_for": "Complex patterns, large datasets"
-            }
+                "emoji": "🧠",
+                "description": "Multi-layer perceptron for regression tasks.",
+                "strengths": ["Learns complex patterns", "Flexible"],
+                "best_for": "Complex patterns, large datasets",
+            },
         }
 
 
 def create_model(model_name, problem_type, hyperparams):
     """
     Create and configure a model instance.
-    
+
     Args:
         model_name (str): Name of the model
         problem_type (str): Either "Classification" or "Regression"
         hyperparams (dict): Hyperparameters for the model
-        
+
     Returns:
         sklearn model: Configured model instance
     """
     params = hyperparams.get(model_name, {})
-    
+
     # Classification Models
     if problem_type == "Classification":
         if model_name == "Logistic Regression":
             return LogisticRegression(
-                C=params.get('C', 1.0),
-                max_iter=params.get('max_iter', 1000),
-                solver=params.get('solver', 'lbfgs'),
-                random_state=42
+                C=params.get("C", 1.0),
+                max_iter=params.get("max_iter", 1000),
+                solver=params.get("solver", "lbfgs"),
+                random_state=42,
             )
         elif model_name == "Random Forest":
             return RandomForestClassifier(
-                n_estimators=params.get('n_estimators', 15),
-                max_depth=params.get('max_depth', 10),
-                min_samples_split=params.get('min_samples_split', 2),
-                min_samples_leaf=params.get('min_samples_leaf', 1),
+                n_estimators=params.get("n_estimators", 15),
+                max_depth=params.get("max_depth", 10),
+                min_samples_split=params.get("min_samples_split", 2),
+                min_samples_leaf=params.get("min_samples_leaf", 1),
                 n_jobs=MAX_JOBS_HEAVY,
-                random_state=42
+                random_state=42,
             )
         elif model_name == "Support Vector Machine":
             return SVC(
-                C=params.get('C', 1.0),
-                kernel=params.get('kernel', 'rbf'),
-                gamma=params.get('gamma', 'scale'),
+                C=params.get("C", 1.0),
+                kernel=params.get("kernel", "linear"),
+                gamma=params.get("gamma", "scale"),
                 probability=True,
-                random_state=42
+                random_state=42,
             )
         elif model_name == "Decision Tree":
             return DecisionTreeClassifier(
-                max_depth=params.get('max_depth', 10),
-                min_samples_split=params.get('min_samples_split', 2),
-                min_samples_leaf=params.get('min_samples_leaf', 1),
-                criterion=params.get('criterion', 'gini'),
-                random_state=42
+                max_depth=params.get("max_depth", 10),
+                min_samples_split=params.get("min_samples_split", 2),
+                min_samples_leaf=params.get("min_samples_leaf", 1),
+                criterion=params.get("criterion", "gini"),
+                random_state=42,
             )
         elif model_name == "K-Nearest Neighbors":
             return KNeighborsClassifier(
-                n_neighbors=params.get('n_neighbors', 5),
-                weights=params.get('weights', 'uniform'),
-                metric=params.get('metric', 'euclidean')
+                n_neighbors=params.get("n_neighbors", 5),
+                weights=params.get("weights", "uniform"),
+                metric=params.get("metric", "euclidean"),
             )
         elif model_name == "Gradient Boosting":
             return GradientBoostingClassifier(
-                n_estimators=params.get('n_estimators', 50),
-                learning_rate=params.get('learning_rate', 0.1),
-                max_depth=params.get('max_depth', 6),
-                random_state=42
+                n_estimators=params.get("n_estimators", 50),
+                learning_rate=params.get("learning_rate", 0.1),
+                max_depth=params.get("max_depth", 6),
+                random_state=42,
             )
         elif model_name == "AdaBoost":
             return AdaBoostClassifier(
-                n_estimators=params.get('n_estimators', 30),
-                learning_rate=params.get('learning_rate', 1.0),
-                algorithm=params.get('algorithm', 'SAMME'),
-                random_state=42
+                n_estimators=params.get("n_estimators", 30),
+                learning_rate=params.get("learning_rate", 1.0),
+                algorithm=params.get("algorithm", "SAMME"),
+                random_state=42,
             )
         elif model_name == "Naive Bayes":
-            return GaussianNB(
-                var_smoothing=params.get('var_smoothing', 1e-9)
-            )
+            return GaussianNB(var_smoothing=params.get("var_smoothing", 1e-9))
         elif model_name == "Neural Network":
             return MLPClassifier(
-                hidden_layer_sizes=params.get('hidden_layer_sizes', (100,)),
-                learning_rate_init=params.get('learning_rate_init', 0.001),
-                max_iter=params.get('max_iter', 100),
-                activation=params.get('activation', 'relu'),
-                random_state=42
+                hidden_layer_sizes=params.get("hidden_layer_sizes", (100,)),
+                learning_rate_init=params.get("learning_rate_init", 0.001),
+                max_iter=params.get("max_iter", 100),
+                activation=params.get("activation", "relu"),
+                random_state=42,
             )
         elif model_name == "Ridge Classifier":
-            return RidgeClassifier(
-                alpha=params.get('alpha', 1.0),
-                random_state=42
-            )
-            
+            return RidgeClassifier(alpha=params.get("alpha", 1.0), random_state=42)
+
     # Regression Models
     else:  # Regression
         if model_name == "Linear Regression":
-            return LinearRegression(
-                fit_intercept=params.get('fit_intercept', True)
-            )
+            return LinearRegression(fit_intercept=params.get("fit_intercept", True))
         elif model_name == "Random Forest":
             return RandomForestRegressor(
-                n_estimators=params.get('n_estimators', 15),
-                max_depth=params.get('max_depth', 10),
-                min_samples_split=params.get('min_samples_split', 2),
-                min_samples_leaf=params.get('min_samples_leaf', 1),
+                n_estimators=params.get("n_estimators", 15),
+                max_depth=params.get("max_depth", 10),
+                min_samples_split=params.get("min_samples_split", 2),
+                min_samples_leaf=params.get("min_samples_leaf", 1),
                 n_jobs=MAX_JOBS_HEAVY,
-                random_state=42
+                random_state=42,
             )
         elif model_name == "Support Vector Regression":
             return SVR(
-                C=params.get('C', 1.0),
-                kernel=params.get('kernel', 'rbf'),
-                epsilon=params.get('epsilon', 0.1)
+                C=params.get("C", 1.0),
+                kernel=params.get("kernel", "linear"),
+                epsilon=params.get("epsilon", 0.1),
             )
         elif model_name == "Decision Tree":
             return DecisionTreeRegressor(
-                max_depth=params.get('max_depth', 10),
-                min_samples_split=params.get('min_samples_split', 2),
-                min_samples_leaf=params.get('min_samples_leaf', 1),
-                random_state=42
+                max_depth=params.get("max_depth", 10),
+                min_samples_split=params.get("min_samples_split", 2),
+                min_samples_leaf=params.get("min_samples_leaf", 1),
+                random_state=42,
             )
         elif model_name == "K-Nearest Neighbors":
             return KNeighborsRegressor(
-                n_neighbors=params.get('n_neighbors', 5),
-                weights=params.get('weights', 'uniform'),
-                metric=params.get('metric', 'euclidean')
+                n_neighbors=params.get("n_neighbors", 5),
+                weights=params.get("weights", "uniform"),
+                metric=params.get("metric", "euclidean"),
             )
         elif model_name == "Gradient Boosting":
             return GradientBoostingRegressor(
-                n_estimators=params.get('n_estimators', 50),
-                learning_rate=params.get('learning_rate', 0.1),
-                max_depth=params.get('max_depth', 6),
-                random_state=42
+                n_estimators=params.get("n_estimators", 50),
+                learning_rate=params.get("learning_rate", 0.1),
+                max_depth=params.get("max_depth", 6),
+                random_state=42,
             )
         elif model_name == "Ridge Regression":
-            return Ridge(
-                alpha=params.get('alpha', 1.0),
-                random_state=42
-            )
+            return Ridge(alpha=params.get("alpha", 1.0), random_state=42)
         elif model_name == "Lasso Regression":
             return Lasso(
-                alpha=params.get('alpha', 1.0),
-                max_iter=params.get('max_iter', 500),
-                random_state=42
+                alpha=params.get("alpha", 1.0),
+                max_iter=params.get("max_iter", 500),
+                random_state=42,
             )
         elif model_name == "Neural Network":
             return MLPRegressor(
-                hidden_layer_sizes=params.get('hidden_layer_sizes', (100,)),
-                learning_rate_init=params.get('learning_rate_init', 0.001),
-                max_iter=params.get('max_iter', 100),
-                activation=params.get('activation', 'relu'),
-                random_state=42
+                hidden_layer_sizes=params.get("hidden_layer_sizes", (100,)),
+                learning_rate_init=params.get("learning_rate_init", 0.001),
+                max_iter=params.get("max_iter", 100),
+                activation=params.get("activation", "relu"),
+                random_state=42,
             )
-    
+
     raise ValueError(f"Unknown model: {model_name} for {problem_type}")
 
 
 def get_metric_descriptions(problem_type):
     """
     Get detailed metric descriptions for UI display.
-    
+
     Args:
         problem_type (str): Either "Classification" or "Regression"
-        
+
     Returns:
         dict: Dictionary mapping metric names to description dictionaries
     """
@@ -316,15 +359,24 @@ def get_metric_descriptions(problem_type):
                 "formula": r"\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}",
                 "usage": "Overall performance measure",
                 "strengths": ["Simple to understand", "Good for balanced datasets"],
-                "weaknesses": ["Misleading on imbalanced data", "Doesn't distinguish error types"]
+                "weaknesses": [
+                    "Misleading on imbalanced data",
+                    "Doesn't distinguish error types",
+                ],
             },
             "Precision": {
                 "emoji": "🔍",
                 "description": "Proportion of correct positive predictions over all positive predictions",
                 "formula": r"\text{Precision} = \frac{TP}{TP + FP}",
                 "usage": "Important when false positives are costly",
-                "strengths": ["Reduces false alarms", "Focuses on positive class quality"],
-                "weaknesses": ["Ignores false negatives", "Can be high with few predictions"]
+                "strengths": [
+                    "Reduces false alarms",
+                    "Focuses on positive class quality",
+                ],
+                "weaknesses": [
+                    "Ignores false negatives",
+                    "Can be high with few predictions",
+                ],
             },
             "Recall": {
                 "emoji": "📡",
@@ -332,16 +384,25 @@ def get_metric_descriptions(problem_type):
                 "formula": r"\text{Recall} = \frac{TP}{TP + FN}",
                 "usage": "Important when missing positives is costly",
                 "strengths": ["Captures all positive cases", "Good for rare events"],
-                "weaknesses": ["Ignores false positives", "Can be high with many predictions"]
+                "weaknesses": [
+                    "Ignores false positives",
+                    "Can be high with many predictions",
+                ],
             },
             "F1": {
                 "emoji": "⚖️",
                 "description": "Harmonic mean of Precision and Recall",
                 "formula": r"F1 = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}",
                 "usage": "Balanced measure when you care about both precision and recall",
-                "strengths": ["Balances precision and recall", "Good for imbalanced data"],
-                "weaknesses": ["Less interpretable than accuracy", "Ignores true negatives"]
-            }
+                "strengths": [
+                    "Balances precision and recall",
+                    "Good for imbalanced data",
+                ],
+                "weaknesses": [
+                    "Less interpretable than accuracy",
+                    "Ignores true negatives",
+                ],
+            },
         }
     else:  # Regression
         return {
@@ -350,8 +411,15 @@ def get_metric_descriptions(problem_type):
                 "description": "Coefficient of determination - proportion of variance explained by the model",
                 "formula": r"R^2 = 1 - \frac{\sum(y_i - \hat{y}_i)^2}{\sum(y_i - \bar{y})^2}",
                 "usage": "Overall model fit quality",
-                "strengths": ["Scale-independent", "Easy to interpret (0 to 1)", "Comparable across datasets"],
-                "weaknesses": ["Can be negative for bad models", "Increases with more features"]
+                "strengths": [
+                    "Scale-independent",
+                    "Easy to interpret (0 to 1)",
+                    "Comparable across datasets",
+                ],
+                "weaknesses": [
+                    "Can be negative for bad models",
+                    "Increases with more features",
+                ],
             },
             "RMSE": {
                 "emoji": "📏",
@@ -359,15 +427,18 @@ def get_metric_descriptions(problem_type):
                 "formula": r"\text{RMSE} = \sqrt{\frac{1}{n}\sum(y_i - \hat{y}_i)^2}",
                 "usage": "Penalizes large errors more heavily",
                 "strengths": ["Same units as target", "Penalizes outliers"],
-                "weaknesses": ["Sensitive to outliers", "Scale-dependent"]
+                "weaknesses": ["Sensitive to outliers", "Scale-dependent"],
             },
             "MAE": {
                 "emoji": "📐",
                 "description": "Mean Absolute Error - average absolute prediction error",
                 "formula": r"\text{MAE} = \frac{1}{n}\sum|y_i - \hat{y}_i|",
                 "usage": "Robust measure of average error",
-                "strengths": ["Same units as target", "Robust to outliers", "Easy to interpret"],
-                "weaknesses": ["Doesn't penalize large errors", "Scale-dependent"]
-            }
+                "strengths": [
+                    "Same units as target",
+                    "Robust to outliers",
+                    "Easy to interpret",
+                ],
+                "weaknesses": ["Doesn't penalize large errors", "Scale-dependent"],
+            },
         }
-
