@@ -67,7 +67,7 @@ def render_classification_page():
     
     # Initialize temp key from permanent key if needed
     if "_classification_models" not in st.session_state:
-        st.session_state["_classification_models"] = st.session_state.get("classification_models", ["Random Forest", "Logistic Regression", "Support Vector Machine"])
+        st.session_state["_classification_models"] = st.session_state.get("classification_models", [])
     
     selected_models = st.multiselect(
         "Choose Classification Models:",
@@ -78,6 +78,9 @@ def render_classification_page():
         on_change=save_to_state,
         args=("_classification_models", "classification_models")
     )
+    
+    if not selected_models:
+        st.warning("⚠️ Please select at least one model to train and compare.")
     
     # Display model information cards
     if selected_models:
@@ -91,7 +94,7 @@ def render_classification_page():
     
     # Initialize temp key from permanent key if needed
     if "_classification_metrics" not in st.session_state:
-        st.session_state["_classification_metrics"] = st.session_state.get("classification_metrics", available_metrics)
+        st.session_state["_classification_metrics"] = st.session_state.get("classification_metrics", [])
     
     selected_metrics = st.multiselect(
         "Choose Metrics to Display:",

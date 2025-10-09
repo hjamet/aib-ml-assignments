@@ -52,15 +52,15 @@ def initialize_session_state():
     
     # Regression page defaults
     if "regression_models" not in st.session_state:
-        st.session_state.regression_models = ["Linear Regression", "Random Forest", "Ridge Regression"]
-    if "selected_exploration_model_regression" not in st.session_state:
-        st.session_state.selected_exploration_model_regression = "Linear Regression"
+        st.session_state.regression_models = []
+    if "regression_metrics" not in st.session_state:
+        st.session_state.regression_metrics = []
     
     # Classification page defaults
     if "classification_models" not in st.session_state:
-        st.session_state.classification_models = ["Random Forest", "Logistic Regression", "Support Vector Machine"]
-    if "selected_exploration_model_classification" not in st.session_state:
-        st.session_state.selected_exploration_model_classification = "Random Forest"
+        st.session_state.classification_models = []
+    if "classification_metrics" not in st.session_state:
+        st.session_state.classification_metrics = []
 
 
 def home_page():

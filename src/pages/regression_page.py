@@ -69,7 +69,7 @@ def render_regression_page():
     
     # Initialize temp key from permanent key if needed
     if "_regression_models" not in st.session_state:
-        st.session_state["_regression_models"] = st.session_state.get("regression_models", ["Linear Regression", "Random Forest", "Ridge Regression"])
+        st.session_state["_regression_models"] = st.session_state.get("regression_models", [])
     
     selected_models = st.multiselect(
         "Choose Regression Models:",
@@ -80,6 +80,9 @@ def render_regression_page():
         on_change=save_to_state,
         args=("_regression_models", "regression_models")
     )
+    
+    if not selected_models:
+        st.warning("⚠️ Please select at least one model to train and compare.")
     
     # Display model information cards
     if selected_models:
@@ -93,7 +96,7 @@ def render_regression_page():
     
     # Initialize temp key from permanent key if needed
     if "_regression_metrics" not in st.session_state:
-        st.session_state["_regression_metrics"] = st.session_state.get("regression_metrics", available_metrics)
+        st.session_state["_regression_metrics"] = st.session_state.get("regression_metrics", [])
     
     selected_metrics = st.multiselect(
         "Choose Metrics to Display:",
