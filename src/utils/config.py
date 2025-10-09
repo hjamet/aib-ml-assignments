@@ -15,9 +15,10 @@ AVAILABLE_CORES = max(1, TOTAL_CORES - RESERVED_CORES)
 # Heavy models (Random Forest, Gradient Boosting) use multiprocessing
 # On small datasets, this adds slight overhead (~0.05s) but provides critical benefits:
 # - Better CPU load distribution when 50+ users train models simultaneously
-# - Prevents system freeze by limiting cores per user (4 instead of 20)
-# - Allows CPU scheduler to efficiently manage 200 threads vs 1000+ threads
-MAX_JOBS_HEAVY = min(4, max(1, AVAILABLE_CORES // 4))
+# - Prevents system freeze by limiting cores per user (2 instead of 20)
+# - Allows CPU scheduler to efficiently manage concurrent student sessions
+# Reduced from 4 to 2 to handle 100-150 concurrent students
+MAX_JOBS_HEAVY = min(2, max(1, AVAILABLE_CORES // 4))
 
 # Light models (Logistic Regression, SVM, etc.) don't benefit from multiprocessing
 # on small datasets due to overhead
@@ -28,22 +29,23 @@ MAX_JOBS_LIGHT = 1
 def setup_page_config():
     """
     Configure Streamlit page settings.
-    
+
     Sets the page title, icon, layout, and initial sidebar state.
     """
     import streamlit as st
+
     st.set_page_config(
         page_title="ML Demo: Titanic Dataset Explorer",
         page_icon="🚢",
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded",
     )
 
 
 def get_css_styles():
     """
     Get CSS styles for the application.
-    
+
     Returns:
         str: CSS styles as a string
     """
@@ -95,4 +97,5 @@ def get_css_styles():
 def apply_css_styles():
     """Apply custom CSS styles to the Streamlit app."""
     import streamlit as st
+
     st.markdown(get_css_styles(), unsafe_allow_html=True)

@@ -173,7 +173,7 @@ def create_model(model_name, problem_type, hyperparams):
             )
         elif model_name == "Random Forest":
             return RandomForestClassifier(
-                n_estimators=params.get('n_estimators', 100),
+                n_estimators=params.get('n_estimators', 15),
                 max_depth=params.get('max_depth', 10),
                 min_samples_split=params.get('min_samples_split', 2),
                 min_samples_leaf=params.get('min_samples_leaf', 1),
@@ -204,14 +204,14 @@ def create_model(model_name, problem_type, hyperparams):
             )
         elif model_name == "Gradient Boosting":
             return GradientBoostingClassifier(
-                n_estimators=params.get('n_estimators', 100),
+                n_estimators=params.get('n_estimators', 50),
                 learning_rate=params.get('learning_rate', 0.1),
                 max_depth=params.get('max_depth', 6),
                 random_state=42
             )
         elif model_name == "AdaBoost":
             return AdaBoostClassifier(
-                n_estimators=params.get('n_estimators', 50),
+                n_estimators=params.get('n_estimators', 30),
                 learning_rate=params.get('learning_rate', 1.0),
                 algorithm=params.get('algorithm', 'SAMME'),
                 random_state=42
@@ -224,7 +224,7 @@ def create_model(model_name, problem_type, hyperparams):
             return MLPClassifier(
                 hidden_layer_sizes=params.get('hidden_layer_sizes', (100,)),
                 learning_rate_init=params.get('learning_rate_init', 0.001),
-                max_iter=params.get('max_iter', 200),
+                max_iter=params.get('max_iter', 100),
                 activation=params.get('activation', 'relu'),
                 random_state=42
             )
@@ -242,7 +242,7 @@ def create_model(model_name, problem_type, hyperparams):
             )
         elif model_name == "Random Forest":
             return RandomForestRegressor(
-                n_estimators=params.get('n_estimators', 100),
+                n_estimators=params.get('n_estimators', 15),
                 max_depth=params.get('max_depth', 10),
                 min_samples_split=params.get('min_samples_split', 2),
                 min_samples_leaf=params.get('min_samples_leaf', 1),
@@ -270,7 +270,7 @@ def create_model(model_name, problem_type, hyperparams):
             )
         elif model_name == "Gradient Boosting":
             return GradientBoostingRegressor(
-                n_estimators=params.get('n_estimators', 100),
+                n_estimators=params.get('n_estimators', 50),
                 learning_rate=params.get('learning_rate', 0.1),
                 max_depth=params.get('max_depth', 6),
                 random_state=42
@@ -283,14 +283,14 @@ def create_model(model_name, problem_type, hyperparams):
         elif model_name == "Lasso Regression":
             return Lasso(
                 alpha=params.get('alpha', 1.0),
-                max_iter=params.get('max_iter', 1000),
+                max_iter=params.get('max_iter', 500),
                 random_state=42
             )
         elif model_name == "Neural Network":
             return MLPRegressor(
                 hidden_layer_sizes=params.get('hidden_layer_sizes', (100,)),
                 learning_rate_init=params.get('learning_rate_init', 0.001),
-                max_iter=params.get('max_iter', 200),
+                max_iter=params.get('max_iter', 100),
                 activation=params.get('activation', 'relu'),
                 random_state=42
             )

@@ -204,13 +204,13 @@ def render_hyperparameter_controls(model_name, problem_type, key_prefix):
     if model_name == "Logistic Regression":
         hyperparams = {
             'C': st.slider(f"Regularization (C)", 0.01, 10.0, 1.0, 0.01, key=f"{key_prefix}_lr_c"),
-            'max_iter': st.slider(f"Max Iterations", 100, 2000, 1000, 100, key=f"{key_prefix}_lr_iter"),
+            'max_iter': st.slider(f"Max Iterations", 100, 1000, 500, 100, key=f"{key_prefix}_lr_iter"),
             'solver': st.selectbox(f"Solver", ['liblinear', 'lbfgs', 'saga'], index=1, key=f"{key_prefix}_lr_solver")
         }
         
     elif model_name == "Random Forest":
         hyperparams = {
-            'n_estimators': st.slider(f"Number of Trees", 10, 500, 100, 10, key=f"{key_prefix}_rf_trees"),
+            'n_estimators': st.slider(f"Number of Trees", 5, 200, 15, 5, key=f"{key_prefix}_rf_trees"),
             'max_depth': st.slider(f"Max Depth", 3, 20, 10, 1, key=f"{key_prefix}_rf_depth"),
             'min_samples_split': st.slider(f"Min Samples Split", 2, 20, 2, 1, key=f"{key_prefix}_rf_split"),
             'min_samples_leaf': st.slider(f"Min Samples Leaf", 1, 10, 1, 1, key=f"{key_prefix}_rf_leaf")
@@ -248,14 +248,14 @@ def render_hyperparameter_controls(model_name, problem_type, key_prefix):
         
     elif model_name == "Gradient Boosting":
         hyperparams = {
-            'n_estimators': st.slider(f"Number of Estimators", 50, 300, 100, 10, key=f"{key_prefix}_gb_trees"),
+            'n_estimators': st.slider(f"Number of Estimators", 20, 200, 50, 10, key=f"{key_prefix}_gb_trees"),
             'learning_rate': st.slider(f"Learning Rate", 0.01, 0.5, 0.1, 0.01, key=f"{key_prefix}_gb_lr"),
             'max_depth': st.slider(f"Max Depth", 3, 10, 6, 1, key=f"{key_prefix}_gb_depth")
         }
         
     elif model_name == "AdaBoost":
         hyperparams = {
-            'n_estimators': st.slider(f"Number of Estimators", 10, 200, 50, 10, key=f"{key_prefix}_ada_trees"),
+            'n_estimators': st.slider(f"Number of Estimators", 10, 100, 30, 10, key=f"{key_prefix}_ada_trees"),
             'learning_rate': st.slider(f"Learning Rate", 0.1, 2.0, 1.0, 0.1, key=f"{key_prefix}_ada_lr"),
             'algorithm': st.selectbox(f"Algorithm", ['SAMME', 'SAMME.R'], key=f"{key_prefix}_ada_algo")
         }
@@ -270,7 +270,7 @@ def render_hyperparameter_controls(model_name, problem_type, key_prefix):
         hyperparams = {
             'hidden_layer_sizes': tuple(layer_sizes) if layer_sizes else (100,),
             'learning_rate_init': st.slider(f"Learning Rate", 0.001, 0.1, 0.001, 0.001, key=f"{key_prefix}_nn_lr"),
-            'max_iter': st.slider(f"Max Iterations", 100, 1000, 200, 50, key=f"{key_prefix}_nn_iter"),
+            'max_iter': st.slider(f"Max Iterations", 50, 500, 100, 50, key=f"{key_prefix}_nn_iter"),
             'activation': st.selectbox(f"Activation", ['relu', 'tanh', 'logistic'], key=f"{key_prefix}_nn_activation")
         }
         
@@ -287,7 +287,7 @@ def render_hyperparameter_controls(model_name, problem_type, key_prefix):
     elif model_name == "Lasso Regression":
         hyperparams = {
             'alpha': st.slider(f"Alpha", 0.01, 2.0, 1.0, 0.01, key=f"{key_prefix}_lasso_alpha"),
-            'max_iter': st.slider(f"Max Iterations", 100, 2000, 1000, 100, key=f"{key_prefix}_lasso_iter")
+            'max_iter': st.slider(f"Max Iterations", 100, 1000, 500, 100, key=f"{key_prefix}_lasso_iter")
         }
     
     return hyperparams
